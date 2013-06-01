@@ -1,5 +1,8 @@
 #include <AccelStepper.h>
 
+//#define DEBUG
+
+
 #define number_of_74hc595s 3 
 
 #define SER_Pin            8   //pin 14 on the 75HC595
@@ -14,8 +17,11 @@
 #define PUERTA_CERRADA  1400
 #define PUERTA_ABIERTA     0
 
-#define POCA_LUZ         100
-#define MUCHA_LUZ        150
+#define POCA_LUZ         180
+#define MUCHA_LUZ        250
+
+#define LED_ESPEJO0       10
+#define LED_GANASTE       13
 
 
 #define numOfRegisterPins number_of_74hc595s * 8
@@ -30,23 +36,16 @@ void clearRegisters(){
 } 
 
 void writeRegisters(){
-
   digitalWrite(RCLK_Pin, LOW);
 
   for(int i = numOfRegisterPins - 1; i >=  0; i--){
     digitalWrite(SRCLK_Pin, LOW);
-
     int val = registers[i];
-
     digitalWrite(SER_Pin, val);
     digitalWrite(SRCLK_Pin, HIGH);
-
   }
   digitalWrite(RCLK_Pin, HIGH);
-
 }
-
-
 
 class MyStepper: public AccelStepper {
   protected:
@@ -115,12 +114,10 @@ MyStepper stepper2(4, 0, 1, 2, 3);
 MyStepper stepper3(4, 8, 9, 10, 11);
 MyStepper stepper4(4, 12, 13, 14, 15);
 
-const int LED_GANASTE = 16;
-
 void finDeCarrera() {
 
 // Ir al fin de carrera
-    stepper.setCurrentPosition(PUERTA_CERRADA + 300);
+    stepper.setCurrentPosition(PUERTA_CERRADA + 800);
     stepper2.setCurrentPosition(200);
     stepper3.setCurrentPosition(200);
     stepper4.setCurrentPosition(200);
@@ -157,7 +154,9 @@ void finDeCarrera() {
 }
 
 void setup() {
-//    Serial.begin(9600);
+    Serial.begin(115200);
+    Serial.println("-------------------------");
+    Serial.println("reset");
     pinMode(SER_Pin, OUTPUT);
     pinMode(RCLK_Pin, OUTPUT);
     pinMode(SRCLK_Pin, OUTPUT);
@@ -181,14 +180,17 @@ void setup() {
     stepper4.setAcceleration(30);
 
     finDeCarrera();
+    Serial.println("track:juego");
 }
 
 boolean abriendo_puerta = false;
+boolean puerta_cerrada = true;
 boolean estado_boton1 = false;
 boolean estado_boton2 = false;
 boolean estado_boton3 = false;
 int espejo_activo = 0;
 int count = 0;
+int l = 0;
 
 void mover_espejo(int espejo, int direccion) {
   if (espejo == 0) {
@@ -200,12 +202,15 @@ void mover_espejo(int espejo, int direccion) {
   }
 }
 
+boolean inline fin_de_carrera() {
+  return digitalRead(FIN_CARRERA_PIN) == HIGH;
+}
+
 void loop() {  
     int sensor1 = analogRead(SENSOR1); 
     
     if (abriendo_puerta) {
-      if(digitalRead(FIN_CARRERA_PIN) == HIGH) {
-        // llegamos al fin de la carrera
+      if(fin_de_carrera()) {
         abriendo_puerta = false;
         stepper.setMaxSpeed(100);
         stepper.setAcceleration(20);
@@ -214,15 +219,23 @@ void loop() {
       
     } else {
 
-      if (sensor1 > MUCHA_LUZ && digitalRead(FIN_CARRERA_PIN) == LOW) {
+      if (sensor1 > MUCHA_LUZ && !fin_de_carrera()) {
         stepper.setMaxSpeed(5000);
-        stepper.setAcceleration(500);
+        stepper.setAcceleration(1000);
+        if (!abriendo_puerta) {
+          Serial.println("track:puerta");
+          puerta_cerrada = false;
+        }
         abriendo_puerta = true;
         stepper.move(-PUERTA_CERRADA * 2);
       }
       
       if (sensor1 < POCA_LUZ) {
-        stepper.moveTo(PUERTA_CERRADA);      
+        stepper.moveTo(PUERTA_CERRADA);
+        if (stepper.distanceToGo() < 10 && !puerta_cerrada) {
+          puerta_cerrada = true;
+          Serial.println("track:juego");
+        } 
       }
     }
     
@@ -249,7 +262,11 @@ void loop() {
     if (true || count % 1) {
 
       if (estado_boton1) {
+        Serial.println("reset");
         espejo_activo = (espejo_activo + 1) % 3;
+        for (int k=0; k<3; k++) {
+           digitalWrite(LED_ESPEJO0+k, espejo_activo == k ? HIGH : LOW);
+        }  
       }
       
       if (estado_boton2 && !estado_boton3) {
@@ -258,6 +275,7 @@ void loop() {
 
       if (estado_boton3 && !estado_boton2) {
         mover_espejo(espejo_activo, 4);
+        Serial.println("reset");
       }
       
       estado_boton1 = false;
@@ -270,4 +288,13 @@ void loop() {
     stepper3.go();
     stepper4.go();
     writeRegisters();
+    
+    #ifdef DEBUG
+      if ((l++)%30 == 0) {
+        Serial.print("debug:");
+        Serial.print(sensor1);
+        Serial.print(" - ");
+        Serial.println(sensor2);
+      }
+    #endif
 }
