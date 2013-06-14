@@ -1,113 +1,27 @@
 #include <AccelStepper.h>
+#include <Stepper595.h>
 
 //#define DEBUG
 
+// delay antes de apagar el motor ./
+// frenar en seco cuando se suelta el boton 
+// debounce del boton de seleccion de espejo
+// maquina de estado para fin de juego
 
-#define number_of_74hc595s 3 
-
-#define SER_Pin            8   //pin 14 on the 75HC595
-#define RCLK_Pin           9   //pin 12 on the 75HC595
-#define SRCLK_Pin          7   //pin 11 on the 75HC595
 #define FIN_CARRERA_PIN    3
 #define BOTON_1            4
 #define BOTON_2            5
 #define BOTON_3            6
 #define SENSOR0           A5
 #define SENSOR1           A4
+#define LED_ESPEJO0       10
+#define LED_GANASTE       13
+
 #define PUERTA_CERRADA  1400
 #define PUERTA_ABIERTA     0
 
 #define POCA_LUZ         180
 #define MUCHA_LUZ        250
-
-#define LED_ESPEJO0       10
-#define LED_GANASTE       13
-
-
-#define numOfRegisterPins number_of_74hc595s * 8
-#define setRegisterPin(index,value) registers[index] = value
-
-boolean registers[numOfRegisterPins];
-
-void clearRegisters(){
-  for(int i = numOfRegisterPins - 1; i >=  0; i--){
-     registers[i] = LOW;
-  }
-} 
-
-void writeRegisters(){
-  digitalWrite(RCLK_Pin, LOW);
-
-  for(int i = numOfRegisterPins - 1; i >=  0; i--){
-    digitalWrite(SRCLK_Pin, LOW);
-    int val = registers[i];
-    digitalWrite(SER_Pin, val);
-    digitalWrite(SRCLK_Pin, HIGH);
-  }
-  digitalWrite(RCLK_Pin, HIGH);
-}
-
-class MyStepper: public AccelStepper {
-  protected:
-    uint8_t lpin1;
-    uint8_t lpin2;
-    uint8_t lpin3;
-    uint8_t lpin4;
-    
-  public:
-    MyStepper(uint8_t pins, uint8_t pin1, uint8_t pin2, uint8_t pin3, uint8_t pin4) : AccelStepper(pins, pin1, pin2, pin3, pin4) {
-      lpin1 = pin1;
-      lpin2 = pin2;
-      lpin3 = pin3;
-      lpin4 = pin4;
-    }
-   void go()
-   {
-     if (distanceToGo() != 0) {
-       run();
-     } else {
-       setRegisterPin(lpin1, LOW);
-       setRegisterPin(lpin2, LOW);
-       setRegisterPin(lpin3, LOW);
-       setRegisterPin(lpin4, LOW);
-     }
-   }
-   void step(uint8_t step)
-   {
-    switch (step & 0x3)
-    {
-    case 0:    // 1010
-        setRegisterPin(lpin1, HIGH);
-        setRegisterPin(lpin2, LOW);
-        setRegisterPin(lpin3, HIGH);
-        setRegisterPin(lpin4, LOW);
-        break;
-
-    case 1:    // 0110
-        setRegisterPin(lpin1, LOW);
-        setRegisterPin(lpin2, HIGH);
-        setRegisterPin(lpin3, HIGH);
-        setRegisterPin(lpin4, LOW);
-        break;
-
-    case 2:    //0101
-        setRegisterPin(lpin1, LOW);
-        setRegisterPin(lpin2, HIGH);
-        setRegisterPin(lpin3, LOW);
-        setRegisterPin(lpin4, HIGH);
-        break;
-
-
-    case 3:    //1001
-        setRegisterPin(lpin1, HIGH);
-        setRegisterPin(lpin2, LOW);
-        setRegisterPin(lpin3, LOW);
-        setRegisterPin(lpin4, HIGH);
-        break;
-    }
-  }
-
-};
 
 MyStepper stepper(4, 4, 6, 5, 7);
 MyStepper stepper2(4, 0, 1, 2, 3);
@@ -127,10 +41,11 @@ void finDeCarrera() {
     stepper4.moveTo(0);
     
     while(digitalRead(FIN_CARRERA_PIN) == LOW) {
-      stepper.go();
-      stepper2.go();
-      stepper3.go();
-      stepper4.go();
+      unsigned long now = millis();
+      stepper.go(now);
+      stepper2.go(now);
+      stepper3.go(now);
+      stepper4.go(now);
       writeRegisters();    
     }
     stepper.setCurrentPosition(PUERTA_ABIERTA);
@@ -145,10 +60,11 @@ void finDeCarrera() {
     stepper4.moveTo(50);
 
     while (stepper.distanceToGo() > 0) {
-      stepper.go();
-      stepper2.go();
-      stepper3.go();
-      stepper4.go();
+      unsigned long now = millis();
+      stepper.go(now);
+      stepper2.go(now);
+      stepper3.go(now);
+      stepper4.go(now);
       writeRegisters();    
     }
 }
@@ -282,11 +198,11 @@ void loop() {
       estado_boton2 = false;
       estado_boton3 = false;
     }
-    
-    stepper.go();
-    stepper2.go();
-    stepper3.go();
-    stepper4.go();
+    unsigned long current_time = millis();
+    stepper.go(current_time);
+    stepper2.go(current_time);
+    stepper3.go(current_time);
+    stepper4.go(current_time);
     writeRegisters();
     
     #ifdef DEBUG
