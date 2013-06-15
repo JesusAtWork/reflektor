@@ -9,13 +9,14 @@
 #define setRegisterPin(index,value) registers[index] = value
 
 #define DEFAULT_STOP_DELAY 2000
+#define NELEMS(x)  (sizeof(x) / sizeof(x[0]))
 
 extern boolean registers[];
 
 void clearRegisters();
 void writeRegisters();
 
-class MyStepper: public AccelStepper {
+class Stepper: public AccelStepper {
   private:
     void fullstop();
     unsigned long stop_time;
@@ -28,8 +29,20 @@ class MyStepper: public AccelStepper {
     
   public:
     int delay_before_fullstop;
-    MyStepper(uint8_t pins, uint8_t pin1, uint8_t pin2, uint8_t pin3, uint8_t pin4);
+    Stepper(uint8_t pins, uint8_t pin1, uint8_t pin2, uint8_t pin3, uint8_t pin4);
     void go(unsigned long current_time);
     void step(uint8_t step);
     void stop();
 };
+
+/*
+class StepperManager {
+  Stepper *stepper_list;
+  int num_elements;
+  int ser_pin, rclk_pin, srclk_pin;
+  public:
+    StepperManager(int ser_pin, int rclk_pin, int srclk_pin);
+    void set_steppers(Stepper *stepper_list, int num_elements);
+    void go();
+};
+*/

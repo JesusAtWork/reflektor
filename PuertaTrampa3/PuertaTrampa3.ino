@@ -17,16 +17,34 @@
 #define LED_ESPEJO0       10
 #define LED_GANASTE       13
 
+#define SER_Pin            8   //pin 14 on the 75HC595   
+#define RCLK_Pin           9   //pin 12 on the 75HC595   
+#define SRCLK_Pin          7   //pin 11 on the 75HC595   
+
 #define PUERTA_CERRADA  1400
 #define PUERTA_ABIERTA     0
 
 #define POCA_LUZ         180
 #define MUCHA_LUZ        250
 
-MyStepper stepper(4, 4, 6, 5, 7);
-MyStepper stepper2(4, 0, 1, 2, 3);
-MyStepper stepper3(4, 8, 9, 10, 11);
-MyStepper stepper4(4, 12, 13, 14, 15);
+Stepper stepper(4, 4, 6, 5, 7);
+Stepper stepper2(4, 0, 1, 2, 3);
+Stepper stepper3(4, 8, 9, 10, 11);
+Stepper stepper4(4, 12, 13, 14, 15);
+
+/*
+Stepper stepper_list[] = {stepper, stepper2, stepper3, stepper4};
+StepperManager manager = StepperManager (SER_Pin, RCLK_Pin, SRCLK_Pin);
+*/
+
+void motors_go () {
+    unsigned long now = millis();
+    stepper.go(now);
+    stepper2.go(now);
+    stepper3.go(now);
+    stepper4.go(now);
+    writeRegisters();    
+}
 
 void finDeCarrera() {
 
@@ -41,13 +59,9 @@ void finDeCarrera() {
     stepper4.moveTo(0);
     
     while(digitalRead(FIN_CARRERA_PIN) == LOW) {
-      unsigned long now = millis();
-      stepper.go(now);
-      stepper2.go(now);
-      stepper3.go(now);
-      stepper4.go(now);
-      writeRegisters();    
+      motors_go();
     }
+    
     stepper.setCurrentPosition(PUERTA_ABIERTA);
     stepper2.setCurrentPosition(0);
     stepper3.setCurrentPosition(0);
@@ -60,16 +74,13 @@ void finDeCarrera() {
     stepper4.moveTo(50);
 
     while (stepper.distanceToGo() > 0) {
-      unsigned long now = millis();
-      stepper.go(now);
-      stepper2.go(now);
-      stepper3.go(now);
-      stepper4.go(now);
-      writeRegisters();    
+      motors_go();
     }
 }
 
 void setup() {
+    //manager.set_steppers(stepper_list, NELEMS(stepper_list));
+
     Serial.begin(115200);
     Serial.println("-------------------------");
     Serial.println("reset");
@@ -198,12 +209,7 @@ void loop() {
       estado_boton2 = false;
       estado_boton3 = false;
     }
-    unsigned long current_time = millis();
-    stepper.go(current_time);
-    stepper2.go(current_time);
-    stepper3.go(current_time);
-    stepper4.go(current_time);
-    writeRegisters();
+    motors_go();
     
     #ifdef DEBUG
       if ((l++)%30 == 0) {

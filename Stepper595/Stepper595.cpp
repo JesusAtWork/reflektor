@@ -20,7 +20,7 @@ void writeRegisters(){
   digitalWrite(RCLK_Pin, HIGH);
 }
 
-MyStepper::MyStepper(uint8_t pins, uint8_t pin1, uint8_t pin2, uint8_t pin3, uint8_t pin4) : AccelStepper(pins, pin1, pin2, pin3, pin4) {
+Stepper::Stepper(uint8_t pins, uint8_t pin1, uint8_t pin2, uint8_t pin3, uint8_t pin4) : AccelStepper(pins, pin1, pin2, pin3, pin4) {
     lpin1 = pin1;
     lpin2 = pin2;
     lpin3 = pin3;
@@ -29,7 +29,7 @@ MyStepper::MyStepper(uint8_t pins, uint8_t pin1, uint8_t pin2, uint8_t pin3, uin
     delay_before_fullstop = DEFAULT_STOP_DELAY;
 }
 
-void MyStepper::go(unsigned long current_time)
+void Stepper::go(unsigned long current_time)
 {
   if (distanceToGo() != 0) {
     stop_time = current_time + delay_before_fullstop;
@@ -41,14 +41,14 @@ void MyStepper::go(unsigned long current_time)
   }
 }
 
-void MyStepper::fullstop() {
+void Stepper::fullstop() {
    setRegisterPin(lpin1, LOW);
    setRegisterPin(lpin2, LOW);
    setRegisterPin(lpin3, LOW);
    setRegisterPin(lpin4, LOW);
 }
 
-void MyStepper::step(uint8_t step)
+void Stepper::step(uint8_t step)
 {
 switch (step & 0x3)
 {
@@ -82,3 +82,15 @@ case 3:    //1001
     break;
 }
 }
+/*
+StepperManager::StepperManager(int ser_pin, int rclk_pin, int srclk_pin){
+  this->ser_pin = ser_pin;
+  this->rclk_pin = rclk_pin;
+  this->srclk_pin = srclk_pin;
+}
+
+void StepperManager::set_steppers(Stepper *stepper_list, int num_elements) {
+  this->stepper_list = stepper_list;
+  this->num_elements = num_elements;
+}
+*/
