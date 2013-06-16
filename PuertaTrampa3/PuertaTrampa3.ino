@@ -4,8 +4,8 @@
 //#define DEBUG
 
 // delay antes de apagar el motor [./]
-// frenar en seco cuando se suelta el boton
-// debounce del boton de seleccion de espejo
+// frenar en seco cuando se suelta el boton [./]
+// debounce del boton de seleccion de espejo [./]
 // maquina de estado para fin de juego [./]
 #define FIN_CARRERA_PIN    3
 #define BOTON_1            4
@@ -58,116 +58,8 @@ boolean inline fin_de_carrera_activado() {
     return digitalRead(FIN_CARRERA_PIN) == HIGH;
 }
 
-boolean abriendo_puerta = false;
-boolean puerta_cerrada = true;
-boolean estado_boton1 = false;
-boolean estado_boton2 = false;
-boolean estado_boton3 = false;
-int espejo_activo = 0;
-int count = 0;
-
-void mover_espejo(int espejo, int direccion) {
-    if (espejo == 0) {
-        stepper2.move(direccion);
-    } else if (espejo == 1) {
-        stepper3.move(direccion);
-    } else {
-        stepper4.move(direccion);
-    }
-}
-
-class PlayState : public State {
-public:
-    void setup() {
-        Serial.println("track:juego");
-    }
-
-    void loop()
-    {
-
-        int sensor1 = analogRead(SENSOR1);
-
-        if (abriendo_puerta) {
-            if(fin_de_carrera_activado()) {
-                abriendo_puerta = false;
-                stepper.setMaxSpeed(100);
-                stepper.setAcceleration(20);
-                stepper.setCurrentPosition(PUERTA_ABIERTA);
-            }
-
-        } else {
-
-            if (sensor1 > MUCHA_LUZ && !fin_de_carrera_activado()) {
-                stepper.setMaxSpeed(5000);
-                stepper.setAcceleration(1000);
-                if (!abriendo_puerta) {
-                    Serial.println("track:puerta");
-                    puerta_cerrada = false;
-                }
-                abriendo_puerta = true;
-                stepper.move(-PUERTA_CERRADA * 2);
-            }
-
-            if (sensor1 < POCA_LUZ) {
-                stepper.moveTo(PUERTA_CERRADA);
-                if (stepper.distanceToGo() < 10 && !puerta_cerrada) {
-                    puerta_cerrada = true;
-                    Serial.println("track:juego");
-                }
-            }
-        }
-
-        int sensor2 = analogRead(SENSOR0);
-        if (sensor2 > MUCHA_LUZ) {
-            // ganaste!
-        } else {
-            setRegisterPin(LED_GANASTE, LOW);
-        }
-
-        if (digitalRead(BOTON_1) == HIGH) {
-            estado_boton1 = true;
-        }
-
-        if (digitalRead(BOTON_2) == HIGH) {
-            estado_boton2 = true;
-        }
-
-        if (digitalRead(BOTON_3) == HIGH) {
-            estado_boton3 = true;
-        }
-
-        if (estado_boton1) {
-            Serial.println("reset");
-            espejo_activo = (espejo_activo + 1) % 3;
-            for (int k=0; k<3; k++) {
-                digitalWrite(LED_ESPEJO0+k, espejo_activo == k ? HIGH : LOW);
-            }
-        }
-
-        if (estado_boton2 && !estado_boton3) {
-            mover_espejo(espejo_activo, -4);
-        }
-
-        if (estado_boton3 && !estado_boton2) {
-            mover_espejo(espejo_activo, 4);
-            Serial.println("reset");
-        }
-
-        estado_boton1 = false;
-        estado_boton2 = false;
-        estado_boton3 = false;
-
-        static int l = 0;
-#ifdef DEBUG
-        if ((l++)%30 == 0) {
-            Serial.print("debug:");
-            Serial.print(sensor1);
-            Serial.print(" - ");
-            Serial.println(sensor2);
-        }
-#endif
-    }
-} play_state;
+enum {ABRIENDO, CERRANDO, CERRADA} estado_puerta;
+int espejo_activo;
 
 class GameoverState : public State {
 public:
@@ -180,8 +72,125 @@ public:
     }
 } gameover_state;
 
+class PlayState : public State {
+
+    void verificar_sensor1() {
+        int sensor1 = analogRead(SENSOR1);
+        if (estado_puerta == ABRIENDO) {
+            if(fin_de_carrera_activado()) {
+                estado_puerta = CERRANDO;
+                stepper.setMaxSpeed(100);
+                stepper.setAcceleration(20);
+                stepper.setCurrentPosition(PUERTA_ABIERTA);
+            }
+        } else {
+            if (sensor1 < POCA_LUZ) {
+                stepper.moveTo(PUERTA_CERRADA);
+            }
+              
+            if (sensor1 > MUCHA_LUZ && !fin_de_carrera_activado()) {
+                if (estado_puerta == CERRADA) {
+                    Serial.println("track:puerta");
+                }
+                estado_puerta = ABRIENDO;
+                stepper.setMaxSpeed(5000);
+                stepper.setAcceleration(1000);
+                stepper.move(-PUERTA_CERRADA * 2);
+            }
+
+            if (estado_puerta == CERRANDO && stepper.distanceToGo() == 0 ) {
+                estado_puerta = CERRADA;
+                Serial.println("track:juego");
+            }  
+        }
+    }
+
+    void verificar_sensor2() {
+        int sensor2 = analogRead(SENSOR0);
+        if (sensor2 > MUCHA_LUZ) {
+            // ganaste!
+            Serial.println("track:juego");
+            change_state (gameover_state);
+        }
+    }
+    
+    void mover_espejo(int espejo, int direccion) {
+        if (espejo == 0) {
+            stepper2.move(direccion);
+        } else if (espejo == 1) {
+            stepper3.move(direccion);
+        } else {
+            stepper4.move(direccion);
+        }
+    }
+    
+    void procesar_botones_izquierda_derecha() {
+        boolean izquierdo = digitalRead(BOTON_2) == HIGH;
+        boolean derecho = digitalRead(BOTON_3) == HIGH;
+
+        if (izquierdo == true && derecho == false) {
+            mover_espejo(espejo_activo, -400);
+        }
+
+        if (derecho == true && izquierdo == false) {
+            mover_espejo(espejo_activo, 400);
+        }
+        
+        if (izquierdo == false && derecho == false) {
+            mover_espejo(espejo_activo, 0);
+        }
+    }
+
+    void mostrar_espejo_activo () {
+        for (int k=0; k<3; k++) {
+            digitalWrite(LED_ESPEJO0+k, espejo_activo == k ? HIGH : LOW);
+        }
+    }
+
+    void procesar_boton_cambio_espejo() {
+        static boolean estado_anterior = false;
+        boolean estado_actual = digitalRead(BOTON_1) == HIGH;
+        
+        if ( estado_actual == true && estado_anterior == false) {
+            Serial.println("reset");
+            espejo_activo = (espejo_activo + 1) % 3;
+            mostrar_espejo_activo();
+        }
+        estado_anterior = estado_actual;
+    }
+
+    void procesar_botonera() {
+        procesar_botones_izquierda_derecha();
+        procesar_boton_cambio_espejo();
+    }
+
+public:
+    void setup() {
+        espejo_activo = 0;
+        mostrar_espejo_activo();
+        digitalWrite(LED_GANASTE, LOW);
+        Serial.println("track:juego");
+    }
+
+    void loop()
+    {
+        verificar_sensor2();
+        verificar_sensor1();
+        procesar_botonera();
+
+#ifdef DEBUG
+        static int l = 0;
+        if ((l++)%30 == 0) {
+            Serial.print("debug:");
+            Serial.print(sensor1);
+            Serial.print(" - ");
+            Serial.println(sensor2);
+        }
+#endif
+    }
+} play_state;
+
 class SetupState : public State {
-    enum {ABRIENDO, CERRANDO} estado_puerta;
 
     void ir_al_fin_carrera() {
         estado_puerta = ABRIENDO;
@@ -218,6 +227,7 @@ public:
             }
         } else { // estado_puerta == CERRANDO
             if (stepper.distanceToGo() == 0) {
+                estado_puerta = CERRADA;
                 change_state(play_state);
             }
         }
