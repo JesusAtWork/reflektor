@@ -1,16 +1,11 @@
 #include <AccelStepper.h>
 #include <Stepper595.h>
+#include "variables.h"
 
-//#define DEBUG
-
-// delay antes de apagar el motor [./]
-// frenar en seco cuando se suelta el boton [./]
-// debounce del boton de seleccion de espejo [./]
-// maquina de estado para fin de juego [./]
 #define FIN_CARRERA_PIN    3
-#define BOTON_1            4
-#define BOTON_2            5
-#define BOTON_3            6
+#define BOTON_CAMBIO       4
+#define BOTON_IZQUIERDO    5
+#define BOTON_DERECHO      6
 #define SENSOR0           A5
 #define SENSOR1           A4
 #define LED_ESPEJO0       10
@@ -18,13 +13,7 @@
 
 #define SER_Pin            8   //pin 14 on the 75HC595   
 #define RCLK_Pin           9   //pin 12 on the 75HC595   
-#define SRCLK_Pin          7   //pin 11 on the 75HC595   
-
-#define PUERTA_CERRADA  1400
-#define PUERTA_ABIERTA     0
-
-#define POCA_LUZ         180
-#define MUCHA_LUZ        250
+#define SRCLK_Pin          7   //pin 11 on the 75HC595
 
 Stepper stepper(4, 4, 6, 5, 7);
 Stepper stepper2(4, 0, 1, 2, 3);
@@ -125,8 +114,8 @@ class PlayState : public State {
     }
 
     void procesar_botones_izquierda_derecha() {
-        boolean izquierdo = digitalRead(BOTON_2) == HIGH;
-        boolean derecho = digitalRead(BOTON_3) == HIGH;
+        boolean izquierdo = digitalRead(BOTON_IZQUIERDO) == HIGH;
+        boolean derecho = digitalRead(BOTON_DERECHO) == HIGH;
 
         if (izquierdo == true && derecho == false) {
             mover_espejo(espejo_activo, -400);
@@ -149,7 +138,7 @@ class PlayState : public State {
 
     void procesar_boton_cambio_espejo() {
         static boolean estado_anterior = false;
-        boolean estado_actual = digitalRead(BOTON_1) == HIGH;
+        boolean estado_actual = digitalRead(BOTON_CAMBIO) == HIGH;
 
         if ( estado_actual == true && estado_anterior == false) {
             Serial.println("reset");
@@ -182,9 +171,9 @@ public:
         static int l = 0;
         if ((l++)%30 == 0) {
             Serial.print("debug:");
-            Serial.print(sensor1);
+            //Serial.print(sensor1);
             Serial.print(" - ");
-            Serial.println(sensor2);
+            //Serial.println(sensor2);
         }
 #endif
     }
@@ -250,9 +239,9 @@ void setup() {
     pinMode(LED_GANASTE, OUTPUT);
 
     pinMode(FIN_CARRERA_PIN, INPUT);
-    pinMode(BOTON_1, INPUT);
-    pinMode(BOTON_2, INPUT);
-    pinMode(BOTON_3, INPUT);
+    pinMode(BOTON_CAMBIO, INPUT);
+    pinMode(BOTON_IZQUIERDO, INPUT);
+    pinMode(BOTON_DERECHO, INPUT);
 
     clearRegisters();
     writeRegisters();
