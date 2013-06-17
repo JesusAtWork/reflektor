@@ -18,7 +18,7 @@ class TuneinoWindow(QtGui.QWidget):
     def initUI(self):
         self.timer = QtCore.QTimer()
         self.timer.timeout.connect(self.read_serial)
-        #self.timer.start(100)
+        self.timer.start(100)
 
         grid = QtGui.QGridLayout()
         grid.setColumnMinimumWidth(1, 300)
@@ -62,10 +62,10 @@ class TuneinoWindow(QtGui.QWidget):
 
 def main():
     app = QtGui.QApplication(sys.argv)
-    serialport = open("demo.txt", "w")
-    #serialport = serial.Serial(SERIAL_PORT, 115200)
-    #print "handshake", serialport.readline().strip()
-    #serialport.timeout = 0
+    #serialport = open("demo.txt", "w")
+    serialport = serial.Serial(SERIAL_PORT, 115200)
+    print "handshake", serialport.readline().strip()
+    serialport.timeout = 0
     tuneino = TuneinoWindow(serialport)
     sys.exit(app.exec_())
     serialport.close()  

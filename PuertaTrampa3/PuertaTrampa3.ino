@@ -2,23 +2,28 @@
 #include <Stepper595.h>
 #include "variables.h"
 
+// PENDIENTES:
+// demorar un ratito en ganar [  ]
+// usar variables en todos lados [./]
+
 #define FIN_CARRERA_PIN    3
 #define BOTON_CAMBIO       4
 #define BOTON_IZQUIERDO    5
 #define BOTON_DERECHO      6
-#define SENSOR0           A5
-#define SENSOR1           A4
-#define LED_ESPEJO0       10
-#define LED_GANASTE       13
 
 #define SER_Pin            8   //pin 14 on the 75HC595   
 #define RCLK_Pin           9   //pin 12 on the 75HC595   
 #define SRCLK_Pin          7   //pin 11 on the 75HC595
+#define LED_ESPEJO1       10   // 11 y 12 son los otros espejos
+#define LED_GANASTE       13
 
-Stepper stepper(4, 4, 6, 5, 7);
-Stepper stepper2(4, 0, 1, 2, 3);
-Stepper stepper3(4, 8, 9, 10, 11);
-Stepper stepper4(4, 12, 13, 14, 15);
+#define SENSOR0           A5
+#define SENSOR1           A4
+
+Stepper carrito(4, 4, 6, 5, 7);
+Stepper espejo1(4, 0, 1, 2, 3);
+Stepper espejo2(4, 8, 9, 10, 11);
+Stepper espejo3(4, 12, 13, 14, 15);
 
 class State {
 public:
@@ -27,7 +32,7 @@ public:
 };
 
 State *current_state;
-void change_state (State &new_state); // stupidest (but needed!) forward declaration ever
+void change_state (State &new_state);  // stupidest (but needed!) forward declaration ever
 
 void change_state (State &new_state) {
     current_state = &new_state;
@@ -36,10 +41,10 @@ void change_state (State &new_state) {
 
 void steppers_go () {
     unsigned long now = millis();
-    stepper.go(now);
-    stepper2.go(now);
-    stepper3.go(now);
-    stepper4.go(now);
+    carrito.go(now);
+    espejo1.go(now);
+    espejo2.go(now);
+    espejo3.go(now);
     writeRegisters();
 }
 
@@ -47,34 +52,35 @@ boolean inline fin_de_carrera_activado() {
     return digitalRead(FIN_CARRERA_PIN) == HIGH;
 }
 
-enum {ABRIENDO, CERRANDO, CERRADA} estado_puerta;
+typedef enum {ABRIENDO, CERRANDO, CERRADA} EstadosPuerta;
+EstadosPuerta estado_puerta;
 int espejo_activo;
 
 class GameoverState : public State {
 public:
     void setup() {
-        stepper.stop();
-        stepper2.stop();
-        stepper3.stop();
-        stepper4.stop();
+        carrito.stop();
+        espejo1.stop();
+        espejo2.stop();
+        espejo3.stop();
         digitalWrite(LED_GANASTE, HIGH);
     }
 } gameover_state;
 
-class PlayState : public State {
 
+class PlayState : public State {
     void verificar_sensor1() {
         int sensor1 = analogRead(SENSOR1);
         if (estado_puerta == ABRIENDO) {
             if(fin_de_carrera_activado()) {
                 estado_puerta = CERRANDO;
-                stepper.setMaxSpeed(100);
-                stepper.setAcceleration(20);
-                stepper.setCurrentPosition(PUERTA_ABIERTA);
+                carrito.setMaxSpeed(VELOCIDAD_CERRANDO);
+                carrito.setAcceleration(ACELERACION_CERRANDO);
+                carrito.setCurrentPosition(PUERTA_ABIERTA);
             }
         } else {
             if (sensor1 < POCA_LUZ) {
-                stepper.moveTo(PUERTA_CERRADA);
+                carrito.moveTo(PUERTA_CERRADA);
             }
 
             if (sensor1 > MUCHA_LUZ && !fin_de_carrera_activado()) {
@@ -82,12 +88,12 @@ class PlayState : public State {
                     Serial.println("track:puerta");
                 }
                 estado_puerta = ABRIENDO;
-                stepper.setMaxSpeed(5000);
-                stepper.setAcceleration(1000);
-                stepper.move(-PUERTA_CERRADA * 2);
+                carrito.setMaxSpeed(VELOCIDAD_ABRIENDO);
+                carrito.setAcceleration(ACELERACION_ABRIENDO);
+                carrito.move(-PUERTA_CERRADA * 2);
             }
 
-            if (estado_puerta == CERRANDO && stepper.distanceToGo() == 0 ) {
+            if (estado_puerta == CERRANDO && carrito.distanceToGo() == 0 ) {
                 estado_puerta = CERRADA;
                 Serial.println("track:juego");
             }
@@ -98,18 +104,18 @@ class PlayState : public State {
         int sensor2 = analogRead(SENSOR0);
         if (sensor2 > MUCHA_LUZ) {
             // ganaste!
-            Serial.println("track:juego");
+            Serial.println("track:gameover");
             change_state (gameover_state);
         }
     }
 
     void mover_espejo(int espejo, int direccion) {
         if (espejo == 0) {
-            stepper2.move(direccion);
+            espejo1.move(direccion);
         } else if (espejo == 1) {
-            stepper3.move(direccion);
+            espejo2.move(direccion);
         } else {
-            stepper4.move(direccion);
+            espejo3.move(direccion);
         }
     }
 
@@ -118,11 +124,11 @@ class PlayState : public State {
         boolean derecho = digitalRead(BOTON_DERECHO) == HIGH;
 
         if (izquierdo == true && derecho == false) {
-            mover_espejo(espejo_activo, -400);
+            mover_espejo(espejo_activo, -MOVIMIENTO_ESPEJO);
         }
 
         if (derecho == true && izquierdo == false) {
-            mover_espejo(espejo_activo, 400);
+            mover_espejo(espejo_activo, MOVIMIENTO_ESPEJO);
         }
 
         if (izquierdo == false && derecho == false) {
@@ -132,7 +138,7 @@ class PlayState : public State {
 
     void mostrar_espejo_activo () {
         for (int k=0; k<3; k++) {
-            digitalWrite(LED_ESPEJO0+k, espejo_activo == k ? HIGH : LOW);
+            digitalWrite(LED_ESPEJO1+k, espejo_activo == k ? HIGH : LOW);
         }
     }
 
@@ -183,26 +189,26 @@ class SetupState : public State {
 
     void ir_al_fin_carrera() {
         estado_puerta = ABRIENDO;
-        stepper.setCurrentPosition(PUERTA_CERRADA + 800);
-        stepper2.setCurrentPosition(200);
-        stepper3.setCurrentPosition(200);
-        stepper4.setCurrentPosition(200);
-        stepper.moveTo(PUERTA_ABIERTA);
-        stepper2.moveTo(0);
-        stepper3.moveTo(0);
-        stepper4.moveTo(0);
+        carrito.setCurrentPosition(PUERTA_CERRADA + 800);
+        espejo1.setCurrentPosition(MOVIMIENTO_ESPEJO * 2);
+        espejo2.setCurrentPosition(MOVIMIENTO_ESPEJO * 2);
+        espejo3.setCurrentPosition(MOVIMIENTO_ESPEJO * 2);
+        carrito.moveTo(PUERTA_ABIERTA);
+        espejo1.moveTo(0);
+        espejo2.moveTo(0);
+        espejo3.moveTo(0);
     }
 
     void cerrar_puerta() {
         estado_puerta = CERRANDO;
-        stepper.setCurrentPosition(PUERTA_ABIERTA);
-        stepper2.setCurrentPosition(0);
-        stepper3.setCurrentPosition(0);
-        stepper4.setCurrentPosition(0);
-        stepper.moveTo(PUERTA_CERRADA);
-        stepper2.moveTo(50);
-        stepper3.moveTo(50);
-        stepper4.moveTo(50);
+        carrito.setCurrentPosition(PUERTA_ABIERTA);
+        espejo1.setCurrentPosition(0);
+        espejo2.setCurrentPosition(0);
+        espejo3.setCurrentPosition(0);
+        carrito.moveTo(PUERTA_CERRADA);
+        espejo1.moveTo(MOVIMIENTO_ESPEJO);
+        espejo2.moveTo(MOVIMIENTO_ESPEJO);
+        espejo3.moveTo(MOVIMIENTO_ESPEJO);
     }
 
 public:
@@ -211,11 +217,11 @@ public:
     }
     void loop() {
         if (estado_puerta == ABRIENDO) {
-            if (fin_de_carrera_activado() || stepper.distanceToGo() == 0) {
+            if (fin_de_carrera_activado() || carrito.distanceToGo() == 0) {
                 cerrar_puerta();
             }
         } else { // estado_puerta == CERRANDO
-            if (stepper.distanceToGo() == 0) {
+            if (carrito.distanceToGo() == 0) {
                 estado_puerta = CERRADA;
                 change_state(play_state);
             }
@@ -223,19 +229,72 @@ public:
     }
 } setup_state;
 
+void update_variables() {
+    carrito.setMaxSpeed(VELOCIDAD_ABRIENDO);
+    carrito.setAcceleration(ACELERACION_ABRIENDO);
+    carrito.delay_before_fullstop = DELAY_BEFORE_FULLSTOP;
 
+    espejo1.setMaxSpeed(VELOCIDAD_ESPEJO1);
+    espejo1.setAcceleration(ACELERACION_ESPEJO1);
+    espejo1.delay_before_fullstop = DELAY_BEFORE_FULLSTOP;
+
+    espejo2.setMaxSpeed(VELOCIDAD_ESPEJO2);
+    espejo2.setAcceleration(ACELERACION_ESPEJO2);
+    espejo2.delay_before_fullstop = DELAY_BEFORE_FULLSTOP;
+
+    espejo3.setMaxSpeed(VELOCIDAD_ESPEJO3);
+    espejo3.setAcceleration(ACELERACION_ESPEJO3);
+    espejo3.delay_before_fullstop = DELAY_BEFORE_FULLSTOP;
+}
+
+#ifdef DEBUG
+String inputString = "";
+
+void parseLine() {
+  if (inputString.startsWith("set ")) {
+    String sIndex = inputString.substring(inputString.indexOf(" ")+1);
+    int index = sIndex.toInt();
+    String sValue = sIndex.substring(sIndex.indexOf(" ")+1);
+    int value = sValue.toInt();
+    *variables[index] = value;
+    Serial.print("setting ");
+    Serial.print(index);
+    Serial.print("=");
+    Serial.println(value);
+    update_variables();
+  }
+}
+
+void serialEvent() {
+  while (Serial.available()) {
+    char inChar = (char)Serial.read(); 
+    if (inChar == '\n') {
+      parseLine();
+      inputString = "";
+    } else {
+      inputString += inChar;
+    }
+  }
+}
+#endif
 
 void setup() {
     Serial.begin(115200);
+    
+#ifdef DEBUG
+    Serial.println("hello board");
+    inputString.reserve(200);
+#endif
+    
     Serial.println("-------------------------");
     Serial.println("reset");
 
     pinMode(SER_Pin, OUTPUT);
     pinMode(RCLK_Pin, OUTPUT);
     pinMode(SRCLK_Pin, OUTPUT);
-    pinMode(LED_ESPEJO0 + 0, OUTPUT);
-    pinMode(LED_ESPEJO0 + 1, OUTPUT);
-    pinMode(LED_ESPEJO0 + 2, OUTPUT);
+    pinMode(LED_ESPEJO1 + 0, OUTPUT);
+    pinMode(LED_ESPEJO1 + 1, OUTPUT);
+    pinMode(LED_ESPEJO1 + 2, OUTPUT);
     pinMode(LED_GANASTE, OUTPUT);
 
     pinMode(FIN_CARRERA_PIN, INPUT);
@@ -246,17 +305,7 @@ void setup() {
     clearRegisters();
     writeRegisters();
 
-    stepper.setMaxSpeed(5000);
-    stepper.setAcceleration(500);
-
-    stepper2.setMaxSpeed(50);
-    stepper2.setAcceleration(30);
-
-    stepper3.setMaxSpeed(50);
-    stepper3.setAcceleration(30);
-
-    stepper4.setMaxSpeed(50);
-    stepper4.setAcceleration(30);
+    update_variables();
 
     change_state (setup_state);
 }
@@ -264,4 +313,7 @@ void setup() {
 void loop() {
     current_state->loop();
     steppers_go();
+    if (DELAY_LOOP > 0) {
+        delay(DELAY_LOOP);
+    }
 }
