@@ -6,6 +6,8 @@
 // demorar un ratito en ganar [  ]
 // usar variables en todos lados [./]
 
+#define DEBUG_PIN          2
+
 #define FIN_CARRERA_PIN    3
 #define BOTON_CAMBIO       4
 #define BOTON_IZQUIERDO    5
@@ -28,6 +30,7 @@ Stepper espejo3(4, 12, 13, 14, 15);
 class State {
 public:
     virtual void setup() = 0;
+    virtual char* name() = 0;
     virtual void loop() {}
 };
 
@@ -35,6 +38,12 @@ State *current_state;
 void change_state (State &new_state);  // stupidest (but needed!) forward declaration ever
 
 void change_state (State &new_state) {
+#ifdef DEBUG
+    Serial.println(new_state.name());
+    while (digitalRead(DEBUG_PIN) == LOW) {
+      delay(50);
+    }
+#endif
     current_state = &new_state;
     current_state->setup();
 }
@@ -65,6 +74,13 @@ public:
         espejo3.stop();
         digitalWrite(LED_GANASTE, HIGH);
     }
+    char* name() {
+      return "Game Over";
+    }
+#ifdef DEBUG
+    void loop();
+#endif
+
 } gameover_state;
 
 
@@ -167,6 +183,10 @@ public:
         Serial.println("track:juego");
     }
 
+    char* name() {
+      return "Running Game";
+    }
+
     void loop()
     {
         verificar_sensor2();
@@ -174,6 +194,10 @@ public:
         procesar_botonera();
 
 #ifdef DEBUG
+        if (digitalRead(DEBUG_PIN) == LOW) {
+            change_state(gameover_state);    
+        }
+/*
         static int l = 0;
         if ((l++)%30 == 0) {
             Serial.print("debug:");
@@ -181,6 +205,7 @@ public:
             Serial.print(" - ");
             //Serial.println(sensor2);
         }
+*/
 #endif
     }
 } play_state;
@@ -213,9 +238,20 @@ class SetupState : public State {
 
 public:
     void setup() {
+        digitalWrite(LED_GANASTE, LOW);
         ir_al_fin_carrera();
     }
+
+    char* name() {
+      return "Initial Setup";
+    }
+
     void loop() {
+#ifdef DEBUG
+        if (digitalRead(DEBUG_PIN) == LOW) {
+            change_state(play_state);    
+        }
+#endif
         if (estado_puerta == ABRIENDO) {
             if (fin_de_carrera_activado() || carrito.distanceToGo() == 0) {
                 cerrar_puerta();
@@ -228,6 +264,20 @@ public:
         }
     }
 } setup_state;
+
+#ifdef DEBUG
+void GameoverState::loop() {
+    static boolean state = true;
+    
+    state = !state;
+    if (digitalRead(DEBUG_PIN) == LOW) {
+        change_state(setup_state);
+    }
+    digitalWrite(LED_GANASTE, state?HIGH:LOW);
+    delay(VELOCIDAD_CERRANDO);
+}
+#endif DEBUG
+
 
 void update_variables() {
     carrito.setMaxSpeed(VELOCIDAD_ABRIENDO);
@@ -257,10 +307,12 @@ void parseLine() {
     String sValue = sIndex.substring(sIndex.indexOf(" ")+1);
     int value = sValue.toInt();
     *variables[index] = value;
+    /*
     Serial.print("setting ");
     Serial.print(index);
     Serial.print("=");
     Serial.println(value);
+    */
     update_variables();
   }
 }
@@ -301,6 +353,9 @@ void setup() {
     pinMode(BOTON_CAMBIO, INPUT);
     pinMode(BOTON_IZQUIERDO, INPUT);
     pinMode(BOTON_DERECHO, INPUT);
+    
+    pinMode(DEBUG_PIN, INPUT);
+    digitalWrite(DEBUG_PIN, HIGH);
 
     clearRegisters();
     writeRegisters();

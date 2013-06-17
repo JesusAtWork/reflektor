@@ -51,7 +51,7 @@ class TuneinoWindow(QtGui.QWidget):
     def update(self, index, value):
         self.sliders[index].setValue(value)
         line = "set %d %d\n" % (index, value)
-        print "out:", line,
+        #print "out:", line,
         self.serialport.write(line)
     
     def read_serial(self):
