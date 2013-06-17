@@ -8,3 +8,7 @@ PuertaTrampa3/.DS_Store
 *.mp3
 
 *.ogg
+
+*.pyc
+
+*.orig

@@ -10,54 +10,58 @@ SERIAL_PORT = "/dev/tty.usbserial-A800eIxN"
 class TuneinoWindow(QtGui.QWidget):
     def __init__(self, serialport):
         super(TuneinoWindow, self).__init__()
-	self.lcds = []
+        self.spinboxes = []
+        self.sliders = []
         self.serialport = serialport
         self.initUI()
         
     def initUI(self):
         self.timer = QtCore.QTimer()
-	self.timer.timeout.connect(self.read_serial)
-	#self.timer.start(100)
+        self.timer.timeout.connect(self.read_serial)
+        #self.timer.start(100)
 
         vbox = QtGui.QVBoxLayout()
         vbox.addStretch(1)
         self.setLayout(vbox)    
 
-	for n, variable in enumerate(variables):
+        for n, variable in enumerate(variables):
             name, default_value, (min_value, max_value) = variable
             hbox = QtGui.QHBoxLayout()
-            hbox.addStretch(1)
             vbox.addLayout(hbox)
 
-            label = QtGui.QLabel(name)
+            label = QtGui.QLabel(name.lower().replace("_", " "))
 
-            lcd = QtGui.QLCDNumber()
-            self.lcds.append(lcd)
+            spinbox = QtGui.QSpinBox()
+            spinbox.setRange(min_value, max_value)
+            self.spinboxes.append(spinbox)
 
-            #dial = QtGui.QDial()
-            dial = QtGui.QSlider(1)
-	    dial.setRange(min_value, max_value)
-	    dial.valueChanged.connect(lambda v, index=n: self.update(index, v))
-	    dial.setValue(default_value)
-	    #self.update(n, control["inicial"])
+            slider = QtGui.QSlider(1)
+            slider.setRange(min_value, max_value)
+            self.sliders.append(slider)
+            slider.setSizePolicy(QtGui.QSizePolicy.Expanding, QtGui.QSizePolicy.Expanding);
+
+            spinbox.valueChanged.connect(lambda v, index=n: self.update(index, v))
+            slider.valueChanged.connect(lambda v, spinbox=spinbox: spinbox.setValue(v))
+            slider.setValue(default_value)
 
             hbox.addWidget(label)
-            hbox.addWidget(dial)
-            hbox.addWidget(lcd)
+            hbox.addWidget(slider)
+            hbox.addWidget(spinbox)
         
         self.setWindowTitle('Tuneino')    
         self.show()
         
     def update(self, index, value):
-	self.lcds[index].display(value)
+        self.sliders[index].setValue(value)
         line = "set %d %d\n" % (index, value)
+        print "out:", line,
         self.serialport.write(line)
     
     def read_serial(self):
-	line = self.serialport.readline()
-	while line:
-	    print line,
-	    line = self.serialport.readline()
+        line = self.serialport.readline()
+        while line:
+            print "in: ", line,
+            line = self.serialport.readline()
 
 def main():
     app = QtGui.QApplication(sys.argv)
@@ -71,4 +75,3 @@ def main():
 
 if __name__ == '__main__':
     main()
-
