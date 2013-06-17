@@ -20,15 +20,12 @@ class TuneinoWindow(QtGui.QWidget):
         self.timer.timeout.connect(self.read_serial)
         #self.timer.start(100)
 
-        vbox = QtGui.QVBoxLayout()
-        vbox.addStretch(1)
-        self.setLayout(vbox)    
+        grid = QtGui.QGridLayout()
+        grid.setColumnMinimumWidth(1, 300)
+        self.setLayout(grid)    
 
         for n, variable in enumerate(variables):
             name, default_value, (min_value, max_value) = variable
-            hbox = QtGui.QHBoxLayout()
-            vbox.addLayout(hbox)
-
             label = QtGui.QLabel(name.lower().replace("_", " "))
 
             spinbox = QtGui.QSpinBox()
@@ -44,9 +41,9 @@ class TuneinoWindow(QtGui.QWidget):
             slider.valueChanged.connect(lambda v, spinbox=spinbox: spinbox.setValue(v))
             slider.setValue(default_value)
 
-            hbox.addWidget(label)
-            hbox.addWidget(slider)
-            hbox.addWidget(spinbox)
+            grid.addWidget(label, n, 0, alignment=QtCore.Qt.AlignRight)
+            grid.addWidget(slider, n, 1)
+            grid.addWidget(spinbox, n, 2)
         
         self.setWindowTitle('Tuneino')    
         self.show()
