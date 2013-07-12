@@ -1,10 +1,12 @@
+import os
 import serial
 import sys
 from PyQt4 import QtGui, QtCore
 from variables import variables
 
-#SERIAL_PORT = "/dev/tty.usbserial-A700dY7k"
-SERIAL_PORT = "/dev/tty.usbserial-A800eIxN"
+SERIAL_PORT = "/dev/tty.usbserial-A700dYLI"
+#SERIAL_PORT = "/dev/tty.usbserial-A800eIxN"
+SERIAL_PORT = ["/dev/" + o for o in os.listdir("/dev") if o.startswith("tty.usb")][0]
 
 
 class TuneinoWindow(QtGui.QWidget):

@@ -1,6 +1,6 @@
 variables = [
-    ("PUERTA_ABIERTA", 1400, (1300, 1500)),
-    ("PUERTA_CERRADA", 0, (-100, 100)),
+    ("PUERTA_CERRADA", 1400, (1300, 1500)),
+    ("PUERTA_ABIERTA", 0, (-100, 100)),
     ("POCA_LUZ", 180, (0, 400)),
     ("MUCHA_LUZ", 250, (200, 1000)),
     ("DELAY_BEFORE_FULLSTOP", 2000, (0, 2000)),
