@@ -15,6 +15,10 @@ DISPLAY_ACCEL = 20
 BLINK_SPEED = 300
 DISPLAY_LEN = 5 
 
+LEFT  = 1
+RIGHT = 2
+SPACE = 4
+
 
 class TuneinoWindow(QtGui.QWidget):
     def __init__(self, serialport):
@@ -26,9 +30,10 @@ class TuneinoWindow(QtGui.QWidget):
             'right': False,
         }
         self.prev_teclas = copy(self.teclas)
-        self.display = [0] * DISPLAY_LEN
+        self.initials = [0] * DISPLAY_LEN
         self.cursor = 0
         self.last_change_time = time.time() * 1000
+        self.last_b = -1
         self.initUI()
         
     def initUI(self):
@@ -52,6 +57,18 @@ class TuneinoWindow(QtGui.QWidget):
         self.setWindowTitle('Tuneino')    
         self.show()
 
+    def send_keys(self):
+        b = 0
+        if self.teclas["left"]:
+            b += LEFT
+        if self.teclas["right"]:
+            b += RIGHT
+        if self.teclas["space"]:
+            b += SPACE
+        if b != self.last_b:
+            self.serialport.write(chr(b))
+        self.last_b = b
+
     def keyPressEvent(self, e):
         if e.key() == QtCore.Qt.Key_Left:
             self.teclas["left"] = True
@@ -59,6 +76,7 @@ class TuneinoWindow(QtGui.QWidget):
             self.teclas["right"] = True
         if e.key() == QtCore.Qt.Key_Space:
             self.teclas["space"] = True
+        self.send_keys()
         
     def keyReleaseEvent(self, e):
         if e.key() == QtCore.Qt.Key_Left:
@@ -67,19 +85,20 @@ class TuneinoWindow(QtGui.QWidget):
             self.teclas["right"] = False
         if e.key() == QtCore.Qt.Key_Space:
             self.teclas["space"] = False
+        self.send_keys()
         
     def update_display(self):
-        text = [CHARSET[c] for c in self.display]
+        text = [CHARSET[c] for c in self.initials]
         if int((time.time() * 1000 - self.last_change_time) / BLINK_SPEED) % 2:
             text[self.cursor] = "_"
         new_text = "".join(text)
         if self.label.text() != new_text:
             self.label.setText(new_text)
-            if self.serialport:
-                self.serialport.write(new_text + "\n")
+            #if self.serialport:
+                #self.serialport.write(new_text + "\n")
 
     def change_display(self, d):
-        self.display[self.cursor] = (self.display[self.cursor] + d) % len(CHARSET)
+        self.initials[self.cursor] = (self.initials[self.cursor] + d) % len(CHARSET)
 
     def loop(self):
         if self.teclas != self.prev_teclas:
@@ -88,12 +107,12 @@ class TuneinoWindow(QtGui.QWidget):
 
         if self.teclas["space"]:
             if not self.space_presionado:
-                if self.display[self.cursor] == CHARSET.index("<"):
-                    self.display[self.cursor] = CHARSET.index(" ")
+                if self.initials[self.cursor] == CHARSET.index("<"):
+                    self.initials[self.cursor] = CHARSET.index(" ")
                     self.cursor = max(0, self.cursor - 1)
-                    self.display[self.cursor] = CHARSET.index("<")
+                    self.initials[self.cursor] = CHARSET.index("<")
                 else:
-                    self.cursor = (self.cursor + 1) % len(self.display)
+                    self.cursor = (self.cursor + 1) % len(self.initials)
                 self.space_presionado = True
         else:
             self.space_presionado = False
@@ -107,6 +126,7 @@ class TuneinoWindow(QtGui.QWidget):
                     self.change_display(+1)
                 self.display_delay = max(self.display_delay - DISPLAY_ACCEL, MIN_DISPLAY_DELAY)
         self.update_display()
+        self.read_serial ();
 
 
     def read_serial(self):
