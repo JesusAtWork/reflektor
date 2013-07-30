@@ -2,17 +2,18 @@
 #define ENABLE        12
 #define CLOCK         13
 
-/*
 #define DATA_HIGH     digitalWrite(DATA, HIGH)
 #define DATA_LOW      digitalWrite(DATA, LOW)
 #define CLOCK_HIGH    digitalWrite(CLOCK, HIGH)
 #define CLOCK_LOW     digitalWrite(CLOCK, LOW)
-*/
 
+
+/*
 #define DATA_HIGH   PORTB |= _BV (3); // digitalWrite (11, HIGH);
 #define DATA_LOW    PORTB &= ~_BV (3); // digitalWrite (11, LOW);
 #define CLOCK_HIGH  PORTB |= _BV (5); // digitalWrite (13, HIGH);
 #define CLOCK_LOW   PORTB &= ~_BV (5); // digitalWrite (13, LOW);
+*/
 
 #define STATUS_LED    13
 #define DISPLAY_LEN   5

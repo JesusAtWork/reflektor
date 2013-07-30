@@ -1,17 +1,24 @@
 #include <AccelStepper.h>
 #include <Stepper595.h>
+#include <display16.h>
 #include "variables.h"
 
 // PENDIENTES:
 // demorar un ratito en ganar [  ]
 // usar variables en todos lados [./]
 
-#define DEBUG_PIN          2
+#undef DEBUG
 
 #define FIN_CARRERA_PIN    3
 #define BOTON_CAMBIO       4
 #define BOTON_IZQUIERDO    5
 #define BOTON_DERECHO      6
+
+#define DISPLAY_LEN        5
+
+#define ENABLE_5484        2
+#define CLOCK_5484         7
+#define DATA_5484          8
 
 #define SER_Pin            8   //pin 14 on the 75HC595   
 #define RCLK_Pin           9   //pin 12 on the 75HC595   
@@ -22,6 +29,9 @@
 #define SENSOR0           A5
 #define SENSOR1           A4
 
+char *texto = "     REFLEKTOR [c] 2013 *#O CLUB DE JAQUEO *#O GPL - reflektor@protocultura.net       \0";
+
+Display16 display(DISPLAY_LEN, ENABLE_5484, CLOCK_5484, DATA_5484);
 Stepper carrito(4, 4, 6, 5, 7);
 Stepper espejo1(4, 0, 1, 2, 3);
 Stepper espejo2(4, 8, 9, 10, 11);
@@ -276,7 +286,7 @@ void GameoverState::loop() {
     digitalWrite(LED_GANASTE, state?HIGH:LOW);
     delay(VELOCIDAD_CERRANDO);
 }
-#endif DEBUG
+#endif
 
 
 void update_variables() {
@@ -354,8 +364,8 @@ void setup() {
     pinMode(BOTON_IZQUIERDO, INPUT);
     pinMode(BOTON_DERECHO, INPUT);
     
-    pinMode(DEBUG_PIN, INPUT);
-    digitalWrite(DEBUG_PIN, HIGH);
+    //pinMode(DEBUG_PIN, OUTPUT);
+    //digitalWrite(DEBUG_PIN, HIGH);
 
     clearRegisters();
     writeRegisters();
@@ -365,10 +375,23 @@ void setup() {
     change_state (setup_state);
 }
 
+unsigned long last_change = 0;
+int n;
+
 void loop() {
     current_state->loop();
     steppers_go();
     if (DELAY_LOOP > 0) {
         delay(DELAY_LOOP);
     }
+    
+    if (millis() > last_change + 200) {
+        display.show(&texto[n]);
+        n++;
+        last_change = millis();
+        if (texto[n+DISPLAY_LEN-1] == '\0') {
+          n = 0;
+        }
+    }
+
 }
