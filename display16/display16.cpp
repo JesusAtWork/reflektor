@@ -5,7 +5,7 @@ unsigned int characters[] = {
 
 };
 
-void Display16::show(char* string){
+void Display16::show(const char* string){
   digitalWrite(_enable_pin, HIGH);
   
   for(int i = _display_len-1; i >= 0; i--){

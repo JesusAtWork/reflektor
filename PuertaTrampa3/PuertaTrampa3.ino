@@ -76,6 +76,10 @@ EstadosPuerta estado_puerta;
 int espejo_activo;
 
 class GameoverState : public State {
+    unsigned long start_time;
+    unsigned long last_change;
+    static const char* MESSAGE;
+    int pos;
 public:
     void setup() {
         carrito.stop();
@@ -83,18 +87,24 @@ public:
         espejo2.stop();
         espejo3.stop();
         digitalWrite(LED_GANASTE, HIGH);
+        start_time = millis();
+        last_change = start_time - 1000;
+        pos = 0;
     }
     char* name() {
       return "Game Over";
     }
-#ifdef DEBUG
     void loop();
-#endif
 
 } gameover_state;
 
+const char* GameoverState::MESSAGE = "    GAME OVER     ";
+
 
 class PlayState : public State {
+    unsigned long last_change;
+    int n;
+  
     void verificar_sensor1() {
         int sensor1 = analogRead(SENSOR1);
         if (estado_puerta == ABRIENDO) {
@@ -184,7 +194,16 @@ class PlayState : public State {
         procesar_botones_izquierda_derecha();
         procesar_boton_cambio_espejo();
     }
-
+    void scrollear_texto() {
+        if (millis() > last_change + 200) {
+            display.show(&texto[n]);
+            n++;
+            last_change = millis();
+            if (texto[n+DISPLAY_LEN-1] == '\0') {
+              n = 0;
+            }
+        }
+    }
 public:
     void setup() {
         espejo_activo = 0;
@@ -202,6 +221,7 @@ public:
         verificar_sensor2();
         verificar_sensor1();
         procesar_botonera();
+        scrollear_texto();
 
 #ifdef DEBUG
         if (digitalRead(DEBUG_PIN) == LOW) {
@@ -275,18 +295,24 @@ public:
     }
 } setup_state;
 
-#ifdef DEBUG
 void GameoverState::loop() {
-    static boolean state = true;
-    
-    state = !state;
+
+#ifdef DEBUG
     if (digitalRead(DEBUG_PIN) == LOW) {
         change_state(setup_state);
     }
-    digitalWrite(LED_GANASTE, state?HIGH:LOW);
-    delay(VELOCIDAD_CERRANDO);
-}
 #endif
+    digitalWrite(LED_GANASTE, (((millis() - start_time) / 100) % 2)?HIGH:LOW);
+    
+    if (millis() > last_change + 200) {
+        last_change = millis();
+        display.show(&MESSAGE[pos]);
+        pos ++;
+        if (MESSAGE[pos + DISPLAY_LEN] == '\0') {
+          pos = 0;
+        }
+    }
+}
 
 
 void update_variables() {
@@ -375,23 +401,10 @@ void setup() {
     change_state (setup_state);
 }
 
-unsigned long last_change = 0;
-int n;
-
 void loop() {
     current_state->loop();
     steppers_go();
     if (DELAY_LOOP > 0) {
         delay(DELAY_LOOP);
     }
-    
-    if (millis() > last_change + 200) {
-        display.show(&texto[n]);
-        n++;
-        last_change = millis();
-        if (texto[n+DISPLAY_LEN-1] == '\0') {
-          n = 0;
-        }
-    }
-
 }

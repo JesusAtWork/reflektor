@@ -21,7 +21,7 @@ public:
     pinMode(_data_pin, OUTPUT);
   }
 
-  void show(char* string);
+  void show(const char* string);
 };
 
 #endif
