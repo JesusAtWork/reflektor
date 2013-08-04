@@ -1,26 +1,24 @@
 #include <Stepper595.h>
 
-boolean registers[numOfRegisterPins];
-
-void clearRegisters() {
+void StepperTrain::clearRegisters() {
     for(int i = numOfRegisterPins - 1; i >=  0; i--) {
         registers[i] = LOW;
     }
 }
 
-void writeRegisters() {
-    digitalWrite(RCLK_Pin, LOW);
+void StepperTrain::writeRegisters() {
+    digitalWrite(rclk_pin, LOW);
 
     for(int i = numOfRegisterPins - 1; i >=  0; i--) {
-        digitalWrite(SRCLK_Pin, LOW);
+        digitalWrite(srclk_pin, LOW);
         int val = registers[i];
-        digitalWrite(SER_Pin, val);
-        digitalWrite(SRCLK_Pin, HIGH);
+        digitalWrite(ser_pin, val);
+        digitalWrite(srclk_pin, HIGH);
     }
-    digitalWrite(RCLK_Pin, HIGH);
+    digitalWrite(rclk_pin, HIGH);
 }
 
-Stepper::Stepper(uint8_t pins, uint8_t pin1, uint8_t pin2, uint8_t pin3, uint8_t pin4) : AccelStepper(pins, pin1, pin2, pin3, pin4) {
+Stepper::Stepper(uint8_t pin1, uint8_t pin2, uint8_t pin3, uint8_t pin4) : AccelStepper(4, pin1, pin2, pin3, pin4) {
     lpin1 = pin1;
     lpin2 = pin2;
     lpin3 = pin3;
@@ -46,10 +44,10 @@ void Stepper::stop() {
 }
 
 void Stepper::fullstop() {
-    setRegisterPin(lpin1, LOW);
-    setRegisterPin(lpin2, LOW);
-    setRegisterPin(lpin3, LOW);
-    setRegisterPin(lpin4, LOW);
+    train.setRegisterPin(lpin1, LOW);
+    train.setRegisterPin(lpin2, LOW);
+    train.setRegisterPin(lpin3, LOW);
+    train.setRegisterPin(lpin4, LOW);
 }
 
 void Stepper::step(uint8_t step)
@@ -57,32 +55,32 @@ void Stepper::step(uint8_t step)
     switch (step & 0x3)
     {
     case 0:    // 1010
-        setRegisterPin(lpin1, HIGH);
-        setRegisterPin(lpin2, LOW);
-        setRegisterPin(lpin3, HIGH);
-        setRegisterPin(lpin4, LOW);
+        train.setRegisterPin(lpin1, HIGH);
+        train.setRegisterPin(lpin2, LOW);
+        train.setRegisterPin(lpin3, HIGH);
+        train.setRegisterPin(lpin4, LOW);
         break;
 
     case 1:    // 0110
-        setRegisterPin(lpin1, LOW);
-        setRegisterPin(lpin2, HIGH);
-        setRegisterPin(lpin3, HIGH);
-        setRegisterPin(lpin4, LOW);
+        train.setRegisterPin(lpin1, LOW);
+        train.setRegisterPin(lpin2, HIGH);
+        train.setRegisterPin(lpin3, HIGH);
+        train.setRegisterPin(lpin4, LOW);
         break;
 
     case 2:    //0101
-        setRegisterPin(lpin1, LOW);
-        setRegisterPin(lpin2, HIGH);
-        setRegisterPin(lpin3, LOW);
-        setRegisterPin(lpin4, HIGH);
+        train.setRegisterPin(lpin1, LOW);
+        train.setRegisterPin(lpin2, HIGH);
+        train.setRegisterPin(lpin3, LOW);
+        train.setRegisterPin(lpin4, HIGH);
         break;
 
 
     case 3:    //1001
-        setRegisterPin(lpin1, HIGH);
-        setRegisterPin(lpin2, LOW);
-        setRegisterPin(lpin3, LOW);
-        setRegisterPin(lpin4, HIGH);
+        train.setRegisterPin(lpin1, HIGH);
+        train.setRegisterPin(lpin2, LOW);
+        train.setRegisterPin(lpin3, LOW);
+        train.setRegisterPin(lpin4, HIGH);
         break;
     }
 }

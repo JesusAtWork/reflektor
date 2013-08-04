@@ -9,38 +9,40 @@
 
 #undef DEBUG
 
-#define FIN_CARRERA_PIN    3
-#define BOTON_CAMBIO       4
-#define BOTON_IZQUIERDO    5
-#define BOTON_DERECHO      6
+const byte FIN_CARRERA_PIN = 3;
+const byte BOTON_CAMBIO = 4;
+const byte BOTON_IZQUIERDO = 5;
+const byte BOTON_DERECHO = 6;
 
-#define DISPLAY_LEN        5
+const byte DISPLAY_LEN = 5;
 
-#define ENABLE_5484        2
-#define CLOCK_5484         7
-#define DATA_5484          8
+const byte ENABLE_5484 = 2;
+const byte CLOCK_5484  = 7;
+const byte DATA_5484   = 8;
 
-#define SER_Pin            8   //pin 14 on the 75HC595   
-#define RCLK_Pin           9   //pin 12 on the 75HC595   
-#define SRCLK_Pin          7   //pin 11 on the 75HC595
-#define LED_ESPEJO1       10   // 11 y 12 son los otros espejos
-#define LED_GANASTE       13
+const byte SER_Pin   = 8;   //pin 14 on the 75HC595   
+const byte RCLK_Pin  = 9;   //pin 12 on the 75HC595   
+const byte SRCLK_Pin = 7;   //pin 11 on the 75HC595
 
-#define SENSOR0           A5
-#define SENSOR1           A4
+const byte LED_ESPEJO1 = 10; // 11 y 12 son los otros espejos
+const byte LED_GANASTE = 13;
 
-char *texto = "     REFLEKTOR [c] 2013 *#O CLUB DE JAQUEO *#O GPL - reflektor@protocultura.net       \0";
+const byte SENSOR0 = A5;
+const byte SENSOR1 = A4;
+
+const char *texto = "     REFLEKTOR [c] 2013 *#O CLUB DE JAQUEO *#O GPL - reflektor@protocultura.net       \0";
 
 Display16 display(DISPLAY_LEN, ENABLE_5484, CLOCK_5484, DATA_5484);
-Stepper carrito(4, 4, 6, 5, 7);
-Stepper espejo1(4, 0, 1, 2, 3);
-Stepper espejo2(4, 8, 9, 10, 11);
-Stepper espejo3(4, 12, 13, 14, 15);
+StepperTrain Stepper::train = StepperTrain();
+Stepper carrito(4, 6, 5, 7);
+Stepper espejo1(0, 1, 2, 3);
+Stepper espejo2(8, 9, 10, 11);  
+Stepper espejo3(12, 13, 14, 15);
 
 class State {
 public:
     virtual void setup() = 0;
-    virtual char* name() = 0;
+    virtual const char* name() = 0;
     virtual void loop() {}
 };
 
@@ -64,7 +66,7 @@ void steppers_go () {
     espejo1.go(now);
     espejo2.go(now);
     espejo3.go(now);
-    writeRegisters();
+    Stepper::train.writeRegisters();
 }
 
 boolean inline fin_de_carrera_activado() {
@@ -91,7 +93,7 @@ public:
         last_change = start_time - 1000;
         pos = 0;
     }
-    char* name() {
+    const char* name() {
       return "Game Over";
     }
     void loop();
@@ -212,7 +214,7 @@ public:
         Serial.println("track:juego");
     }
 
-    char* name() {
+    const char* name() {
       return "Running Game";
     }
 
@@ -272,7 +274,7 @@ public:
         ir_al_fin_carrera();
     }
 
-    char* name() {
+    const char* name() {
       return "Initial Setup";
     }
 
@@ -377,9 +379,6 @@ void setup() {
     Serial.println("-------------------------");
     Serial.println("reset");
 
-    pinMode(SER_Pin, OUTPUT);
-    pinMode(RCLK_Pin, OUTPUT);
-    pinMode(SRCLK_Pin, OUTPUT);
     pinMode(LED_ESPEJO1 + 0, OUTPUT);
     pinMode(LED_ESPEJO1 + 1, OUTPUT);
     pinMode(LED_ESPEJO1 + 2, OUTPUT);
@@ -390,11 +389,13 @@ void setup() {
     pinMode(BOTON_IZQUIERDO, INPUT);
     pinMode(BOTON_DERECHO, INPUT);
     
+    Stepper::train.setup(SER_Pin, RCLK_Pin, SRCLK_Pin);
+    
     //pinMode(DEBUG_PIN, OUTPUT);
     //digitalWrite(DEBUG_PIN, HIGH);
 
-    clearRegisters();
-    writeRegisters();
+    Stepper::train.clearRegisters();
+    Stepper::train.writeRegisters();
 
     update_variables();
 

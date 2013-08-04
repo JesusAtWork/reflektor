@@ -4,13 +4,13 @@
 #include <Arduino.h>
 
 class Display16 {
-  int _display_len;
-  int _enable_pin;
-  int _clock_pin;
-  int _data_pin;
+  byte _display_len;
+  byte _enable_pin;
+  byte _clock_pin;
+  byte _data_pin;
 
 public:
-  Display16(int display_len, int enable_pin, int clock_pin, int data_pin) {
+  Display16(byte display_len, byte enable_pin, byte clock_pin, byte data_pin) {
     _display_len = display_len;
     _enable_pin = enable_pin;
     _clock_pin = clock_pin;
