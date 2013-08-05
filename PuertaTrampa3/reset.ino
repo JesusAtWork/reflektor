@@ -1,4 +1,4 @@
-void SetupState::ir_al_fin_carrera() {
+void ResetState::ir_al_fin_carrera() {
     estado_puerta = ABRIENDO;
     carrito.setCurrentPosition(PUERTA_CERRADA + 800);
     espejo1.setCurrentPosition(MOVIMIENTO_ESPEJO * 2);
@@ -10,7 +10,7 @@ void SetupState::ir_al_fin_carrera() {
     espejo3.moveTo(0);
 }
 
-void SetupState::cerrar_puerta() {
+void ResetState::cerrar_puerta() {
     estado_puerta = CERRANDO;
     carrito.setCurrentPosition(PUERTA_ABIERTA);
     espejo1.setCurrentPosition(0);
@@ -22,12 +22,13 @@ void SetupState::cerrar_puerta() {
     espejo3.moveTo(MOVIMIENTO_ESPEJO);
 }
 
-void SetupState::setup() {
+void ResetState::setup() {
     digitalWrite(LED_GANASTE, LOW);
+    Serial.println("reset");
     ir_al_fin_carrera();
 }
 
-void SetupState::loop() {
+void ResetState::loop() {
 #ifdef DEBUG
     if (digitalRead(DEBUG_PIN) == LOW) {
         change_state(play_state);    

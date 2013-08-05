@@ -1,5 +1,5 @@
-
-const char* GameoverState::MESSAGE = "    GAME OVER     ";
+const char* GAMEOVER_MESSAGE = "    GAME OVER     ";
+const int GAMEOVER_DELAY = 5000;
 
 void GameoverState::setup() {
     carrito.stop();
@@ -14,21 +14,24 @@ void GameoverState::setup() {
 
 
 void GameoverState::loop() {
-
 #ifdef DEBUG
     if (digitalRead(DEBUG_PIN) == LOW) {
-        change_state(setup_state);
+        change_state(reset_state);
     }
 #endif
     digitalWrite(LED_GANASTE, (((millis() - start_time) / 100) % 2)?HIGH:LOW);
     
     if (millis() > last_change + 200) {
         last_change = millis();
-        display.show(&MESSAGE[pos]);
+        display.show(&GAMEOVER_MESSAGE[pos]);
         pos ++;
-        if (MESSAGE[pos + DISPLAY_LEN] == '\0') {
+        if (GAMEOVER_MESSAGE[pos + DISPLAY_LEN] == '\0') {
           pos = 0;
         }
+    }
+    
+    if (millis() > start_time + GAMEOVER_DELAY) {
+        change_state(inputinitials_state);
     }
 }
 

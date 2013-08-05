@@ -76,7 +76,6 @@ void PlayState::procesar_boton_cambio_espejo() {
     boolean estado_actual = digitalRead(BOTON_CAMBIO) == HIGH;
 
     if ( estado_actual == true && estado_anterior == false) {
-        Serial.println("reset");
         espejo_activo = (espejo_activo + 1) % 3;
         mostrar_espejo_activo();
     }
@@ -87,6 +86,8 @@ void PlayState::procesar_botonera() {
     procesar_botones_izquierda_derecha();
     procesar_boton_cambio_espejo();
 }
+
+const char *texto = "     REFLEKTOR [c] 2013 *#O CLUB DE JAQUEO *#O GPL - reflektor@protocultura.net       \0";
 
 void PlayState::scrollear_texto() {
     if (millis() > last_change + 200) {

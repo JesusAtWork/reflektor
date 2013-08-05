@@ -30,7 +30,6 @@ const byte LED_GANASTE = 13;
 const byte SENSOR0 = A5;
 const byte SENSOR1 = A4;
 
-const char *texto = "     REFLEKTOR [c] 2013 *#O CLUB DE JAQUEO *#O GPL - reflektor@protocultura.net       \0";
 
 Display16 display(DISPLAY_LEN, ENABLE_5484, CLOCK_5484, DATA_5484);
 StepperTrain Stepper::train = StepperTrain();
@@ -43,26 +42,25 @@ typedef enum {ABRIENDO, CERRANDO, CERRADA} EstadosPuerta;
 EstadosPuerta estado_puerta;
 int espejo_activo;
 
+
 class State {
 public:
+    static State& current_state;
+    static void change_state(State& new_state);
     virtual const char* name() = 0;
     virtual void setup() = 0;
     virtual void loop() {}
 };
 
-State *current_state;
-
-void change_state (State &new_state);  // stupidest (but needed!) forward declaration ever
-
-void change_state (State &new_state) {
+void State::change_state (State& new_state) {
 #ifdef DEBUG
     Serial.println(new_state.name());
     while (digitalRead(DEBUG_PIN) == LOW) {
       delay(50);
     }
 #endif
-    current_state = &new_state;
-    current_state->setup();
+    current_state = new_state;
+    current_state.setup();
 }
 
 void steppers_go () {
@@ -78,11 +76,9 @@ boolean inline fin_de_carrera_activado() {
     return digitalRead(FIN_CARRERA_PIN) == HIGH;
 }
 
-
 class GameoverState : public State {
     unsigned long start_time;
     unsigned long last_change;
-    static const char* MESSAGE;
     int pos;
 public:
     const char* name() {
@@ -111,17 +107,18 @@ public:
     void loop();
 } play_state;
 
-class SetupState : public State {
+class ResetState : public State {
     void ir_al_fin_carrera();
     void cerrar_puerta();
 public:
     const char* name() {
-      return "Initial Setup";
+      return "Initial Reset";
     }
     void setup();
     void loop();
-} setup_state;
+} reset_state;
 
+State& State::current_state = reset_state;
 
 void setup() {
     Serial.begin(115200);
@@ -153,13 +150,40 @@ void setup() {
     Stepper::train.clearRegisters();
     Stepper::train.writeRegisters();
 
-    change_state (setup_state);
+    State::change_state(reset_state);
 }
 
 void loop() {
-    current_state->loop();
+    State::current_state.loop();
     steppers_go();
     if (DELAY_LOOP > 0) {
         delay(DELAY_LOOP);
     }
 }
+
+
+
+
+class InputInitialsState : public State {
+  unsigned long last_change_time;
+  int cursor;
+  byte initials[DISPLAY_LEN];
+  char buffer[DISPLAY_LEN];
+  byte prev_keystatus;
+  boolean space_was_pressed;
+  int display_delay;
+  
+  void convert_buffer();
+  inline boolean is_blinking();
+  void display_cursor();
+  void update_display();
+  void change_display(int d);
+  inline byte getKeystatus();
+
+public:
+  const char* name() {
+      return "InputInitialsState";
+  }
+  void setup();
+  void loop();
+} inputinitials_state;
