@@ -1,3 +1,5 @@
+const int DISPLAY_UPDATE_INTERVAL = 200;
+
 void PlayState::verificar_sensor1() {
     int sensor1 = analogRead(SENSOR1);
     if (estado_puerta == ABRIENDO) {
@@ -90,7 +92,7 @@ void PlayState::procesar_botonera() {
 const char *texto = "     REFLEKTOR [c] 2013 *#O CLUB DE JAQUEO *#O GPL - reflektor@protocultura.net       \0";
 
 void PlayState::scrollear_texto() {
-    if (millis() > last_change + 200) {
+    if (millis() > last_change + DISPLAY_UPDATE_INTERVAL) {
         display.show(&texto[n]);
         n++;
         last_change = millis();
@@ -105,6 +107,20 @@ void PlayState::setup() {
     mostrar_espejo_activo();
     digitalWrite(LED_GANASTE, LOW);
     Serial.println("track:juego");
+    tiempo_inicial = millis();
+}
+
+void PlayState::mostrar_energia() {
+    if (millis() > last_change + DISPLAY_UPDATE_INTERVAL) {
+        int energia = max((millis() - tiempo_inicial) / 10, 0);
+        char str_energia[10];
+        snprintf(str_energia, 6, "%05d", energia);
+        display.show(str_energia);
+        last_change = millis();
+        if (energia == 0) {
+            change_state(gameover_state);    
+        }
+    }
 }
 
 void PlayState::loop()
@@ -112,8 +128,9 @@ void PlayState::loop()
     verificar_sensor2();
     verificar_sensor1();
     procesar_botonera();
-    scrollear_texto();
-
+    //scrollear_texto();
+    mostrar_energia();
+    
 #ifdef DEBUG
     if (digitalRead(DEBUG_PIN) == LOW) {
         change_state(gameover_state);    

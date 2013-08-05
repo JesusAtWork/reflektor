@@ -99,6 +99,8 @@ class PlayState : public State {
     void procesar_boton_cambio_espejo();
     void procesar_botonera();
     void scrollear_texto();
+    void mostrar_energia();
+    unsigned long tiempo_inicial;
 public:
     const char* name() {
       return "Running Game";
@@ -160,9 +162,6 @@ void loop() {
         delay(DELAY_LOOP);
     }
 }
-
-
-
 
 class InputInitialsState : public State {
   unsigned long last_change_time;
