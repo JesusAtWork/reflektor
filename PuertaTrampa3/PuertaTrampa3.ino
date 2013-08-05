@@ -30,6 +30,7 @@ const byte LED_GANASTE = 13;
 const byte SENSOR0 = A5;
 const byte SENSOR1 = A4;
 
+const int ENERGIA_INICIAL = 10000;
 
 Display16 display(DISPLAY_LEN, ENABLE_5484, CLOCK_5484, DATA_5484);
 StepperTrain Stepper::train = StepperTrain();

@@ -112,10 +112,8 @@ void PlayState::setup() {
 
 void PlayState::mostrar_energia() {
     if (millis() > last_change + DISPLAY_UPDATE_INTERVAL) {
-        int energia = max((millis() - tiempo_inicial) / 10, 0);
-        char str_energia[10];
-        snprintf(str_energia, 6, "%05d", energia);
-        display.show(str_energia);
+        int energia = max(ENERGIA_INICIAL - (millis() - tiempo_inicial) / 16, 0);
+        display_show_energia(energia);
         last_change = millis();
         if (energia == 0) {
             change_state(gameover_state);    

@@ -133,34 +133,3 @@ void InputInitialsState::loop() {
   prev_keystatus = keystatus;
 }
 
-/*
-void setup() {
-    Serial.begin(115200);
-
-    pinMode(DATA, OUTPUT);
-    pinMode(ENABLE, OUTPUT);
-    pinMode(CLOCK, OUTPUT);
-    pinMode(STATUS_LED, OUTPUT);
-    digitalWrite(STATUS_LED, HIGH);
-
-    clearRegisters();
-    writeRegisters();
-}
-*/
-/*
-void loop() {
-    hds.loop();
-    writeRegisters();
-}
-void serialEvent() {
-  while (Serial.available()) {
-    char inChar = (char)Serial.read();
-    hds.setKeystatus(inChar);
-    Serial.println((int)inChar);
-  }
-}
-*/
-
-
-
-
