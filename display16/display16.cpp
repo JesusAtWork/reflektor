@@ -11,7 +11,7 @@ void Display16::show(const char* string){
   for(int i = _display_len-1; i >= 0; i--){
     for (int b = 0; b < 16; b++) {
       digitalWrite(_clock_pin, LOW);
-      unsigned int val = (characters[string[i]] >> b);
+      unsigned int val = (characters[(byte)string[i]] >> b);
       if (val & 1) {
         digitalWrite(_data_pin, HIGH);
       } else {
