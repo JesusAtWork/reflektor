@@ -1,5 +1,10 @@
 #include <WaveHC.h>
 #include <WaveUtil.h>
+#include <Wire.h>
+
+
+String inputString = "";         // a string to hold incoming data
+boolean stringComplete = false;  // whether the string is complete
 
 SdReader card;    // This object holds the information for the card
 FatVolume vol;    // This holds the information for the partition on the card
@@ -14,8 +19,12 @@ WaveHC wave;      // This is the only wave (audio) object, since we will only pl
 //////////////////////////////////// SETUP
 
 void setup() {
-  // set up Serial library at 9600 bps
-  Serial.begin(9600);
+  Serial.begin(115200);
+  inputString.reserve(20);
+
+  Wire.begin(4);
+  Wire.onReceive(receiveEvent);
+  
   pinMode(13, OUTPUT);
   digitalWrite(13, HIGH);
   
@@ -38,16 +47,25 @@ void setup() {
 
 /////////////////////////////////// LOOP
 
+void serialEvent() {
+  while (Serial.available()) {
+    char inChar = (char)Serial.read(); 
+    if (inChar == '\n') {
+      stringComplete = true;
+    } else {
+      inputString += inChar;
+    }
+  }
+}
 
 void loop() {
-  play("gameover.wav");
-  delay(3000);
-  play("game1.wav");
-  delay(3000);
-  play("alarma.wav");
-  delay(3000);
-  play("game2.wav");
-  delay(3000);
+  if (stringComplete) {
+    char filename[13];
+    inputString.toCharArray(filename, 13);
+    play(filename);
+    inputString = "";
+    stringComplete = false;
+  }
 }
 
 /////////////////////////////////// HELPERS
@@ -92,3 +110,10 @@ void play(char *name) {
   wave.play();
 }
 
+void receiveEvent(int howMany)
+{
+  while (Wire.available()) {
+    inputString += (char)Wire.read();
+  }
+  stringComplete = true;
+}
