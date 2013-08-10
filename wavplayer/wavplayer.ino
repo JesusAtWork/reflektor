@@ -1,0 +1,94 @@
+#include <WaveHC.h>
+#include <WaveUtil.h>
+
+SdReader card;    // This object holds the information for the card
+FatVolume vol;    // This holds the information for the partition on the card
+FatReader root;   // This holds the information for the volumes root directory
+FatReader file;   // This object represent the WAV file for a pi digit or period
+WaveHC wave;      // This is the only wave (audio) object, since we will only play one at a time
+/*
+ * Define macro to put error messages in flash memory
+ */
+#define error(msg) error_P(PSTR(msg))
+
+//////////////////////////////////// SETUP
+
+void setup() {
+  // set up Serial library at 9600 bps
+  Serial.begin(9600);
+  pinMode(13, OUTPUT);
+  digitalWrite(13, HIGH);
+  
+  PgmPrintln("Wav player");
+  
+  if (!card.init()) {
+    error("Card init. failed!");
+  }
+  if (!vol.init(card)) {
+    error("No partition!");
+  }
+  if (!root.openRoot(vol)) {
+    error("Couldn't open dir");
+  }
+
+  PgmPrintln("Files found:");
+  root.ls();
+  digitalWrite(13, LOW);
+}
+
+/////////////////////////////////// LOOP
+
+
+void loop() {
+  play("gameover.wav");
+  delay(3000);
+  play("game1.wav");
+  delay(3000);
+  play("alarma.wav");
+  delay(3000);
+  play("game2.wav");
+  delay(3000);
+}
+
+/////////////////////////////////// HELPERS
+
+void error_P(const char *str) {
+  PgmPrint("Error: ");
+  SerialPrint_P(str);
+  sdErrorCheck();
+  while(1);
+}
+/*
+ * print error message and halt if SD I/O error
+ */
+void sdErrorCheck(void) {
+  if (!card.errorCode()) return;
+  PgmPrint("\r\nSD I/O error: ");
+  Serial.print(card.errorCode(), HEX);
+  PgmPrint(", ");
+  Serial.println(card.errorData(), HEX);
+  while(1);
+}
+/*
+ * Open and start playing a WAV file
+ */
+void play(char *name) {
+  if (wave.isplaying) {// already playing something, so stop it!
+    wave.stop(); // stop it
+  }
+  digitalWrite(13, HIGH);
+
+  if (!file.open(root, name)) {
+    PgmPrint("Couldn't open file ");
+    Serial.print(name); 
+    return;
+  }
+  if (!wave.create(file)) {
+    PgmPrintln("Not a valid WAV");
+    return;
+  }
+  // ok time to play!
+  digitalWrite(13, LOW);
+  wave.play();
+}
+
