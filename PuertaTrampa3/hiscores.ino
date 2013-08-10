@@ -106,7 +106,7 @@ void InputInitialsState::loop() {
       } else {
         if (++cursor == DISPLAY_LEN) {
           save_initials();
-          change_state(reset_state);
+          change_state(&reset_state);
         }
       }
       space_was_pressed = true;

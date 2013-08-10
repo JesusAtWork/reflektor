@@ -15,9 +15,9 @@ void GameoverState::setup() {
 
 void GameoverState::loop() {
 #ifdef DEBUG
-    if (digitalRead(DEBUG_PIN) == LOW) {
-        change_state(reset_state);
-    }
+//    if (digitalRead(DEBUG_PIN) == LOW) {
+//        change_state(reset_state);
+//    }
 #endif
     digitalWrite(LED_GANASTE, (((millis() - start_time) / 100) % 2)?HIGH:LOW);
     
@@ -31,7 +31,7 @@ void GameoverState::loop() {
     }
     
     if (millis() > start_time + GAMEOVER_DELAY) {
-        change_state(inputinitials_state);
+        change_state(&inputinitials_state);
     }
 }
 

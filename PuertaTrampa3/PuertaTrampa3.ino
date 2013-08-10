@@ -7,7 +7,7 @@
 // demorar un ratito en ganar [  ]
 // usar variables en todos lados [./]
 
-#undef DEBUG
+#define DEBUG
 
 const byte FIN_CARRERA_PIN = 3;
 const byte BOTON_CAMBIO = 4;
@@ -46,22 +46,22 @@ int espejo_activo;
 
 class State {
 public:
-    static State& current_state;
-    static void change_state(State& new_state);
+    static State* current_state;
+    static void change_state(State* new_state);
     virtual const char* name() = 0;
     virtual void setup() = 0;
     virtual void loop() {}
 };
 
-void State::change_state (State& new_state) {
+void State::change_state (State* new_state) {
 #ifdef DEBUG
-    Serial.println(new_state.name());
-    while (digitalRead(DEBUG_PIN) == LOW) {
-      delay(50);
-    }
+    Serial.println(new_state->name());
+    //while (digitalRead(DEBUG_PIN) == LOW) {
+    //  delay(50);
+    //}
 #endif
-    current_state = new_state;
-    current_state.setup();
+    State::current_state = new_state;
+    State::current_state->setup();
 }
 
 void steppers_go () {
@@ -121,14 +121,38 @@ public:
     void loop();
 } reset_state;
 
-State& State::current_state = reset_state;
+class InputInitialsState : public State {
+  unsigned long last_change_time;
+  int cursor;
+  byte initials[DISPLAY_LEN];
+  char buffer[DISPLAY_LEN];
+  byte prev_keystatus;
+  boolean space_was_pressed;
+  int display_delay;
+  
+  void convert_buffer();
+  inline boolean is_blinking();
+  void display_cursor();
+  void update_display();
+  void change_display(int d);
+  inline byte getKeystatus();
+
+public:
+  const char* name() {
+      return "InputInitialsState";
+  }
+  void setup();
+  void loop();
+} inputinitials_state;
+
+State* State::current_state = &inputinitials_state;
 
 void setup() {
     Serial.begin(115200);
     
 #ifdef DEBUG
     Serial.println("hello board");
-    inputString.reserve(200);
+    //inputString.reserve(200);
     update_variables();
 #endif
     
@@ -153,37 +177,17 @@ void setup() {
     Stepper::train.clearRegisters();
     Stepper::train.writeRegisters();
 
-    State::change_state(reset_state);
+    State::change_state(&reset_state);
 }
 
 void loop() {
-    State::current_state.loop();
+    State::current_state->loop();
     steppers_go();
+#ifdef DEBUG
     if (DELAY_LOOP > 0) {
         delay(DELAY_LOOP);
     }
+#endif
 }
 
-class InputInitialsState : public State {
-  unsigned long last_change_time;
-  int cursor;
-  byte initials[DISPLAY_LEN];
-  char buffer[DISPLAY_LEN];
-  byte prev_keystatus;
-  boolean space_was_pressed;
-  int display_delay;
-  
-  void convert_buffer();
-  inline boolean is_blinking();
-  void display_cursor();
-  void update_display();
-  void change_display(int d);
-  inline byte getKeystatus();
 
-public:
-  const char* name() {
-      return "InputInitialsState";
-  }
-  void setup();
-  void loop();
-} inputinitials_state;

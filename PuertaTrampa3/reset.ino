@@ -31,9 +31,9 @@ void ResetState::setup() {
 
 void ResetState::loop() {
 #ifdef DEBUG
-    if (digitalRead(DEBUG_PIN) == LOW) {
-        change_state(play_state);    
-    }
+//    if (digitalRead(DEBUG_PIN) == LOW) {
+//        change_state(play_state);    
+//    }
 #endif
     if (estado_puerta == ABRIENDO) {
         if (fin_de_carrera_activado() || carrito.distanceToGo() == 0) {
@@ -42,7 +42,7 @@ void ResetState::loop() {
     } else { // estado_puerta == CERRANDO
         if (carrito.distanceToGo() == 0) {
             estado_puerta = CERRADA;
-            change_state(play_state);
+            change_state(&play_state);
         }
     }
 }

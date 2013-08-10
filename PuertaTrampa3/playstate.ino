@@ -1,4 +1,4 @@
-const int DISPLAY_UPDATE_INTERVAL = 200;
+const int DISPLAY_UPDATE_INTERVAL = 100;
 
 void PlayState::verificar_sensor1() {
     int sensor1 = analogRead(SENSOR1);
@@ -36,7 +36,7 @@ void PlayState::verificar_sensor2() {
     if (sensor2 > MUCHA_LUZ) {
         // ganaste!
         Serial.println("track:gameover");
-        change_state (gameover_state);
+        change_state (&gameover_state);
     }
 }
 
@@ -112,11 +112,11 @@ void PlayState::setup() {
 
 void PlayState::mostrar_energia() {
     if (millis() > last_change + DISPLAY_UPDATE_INTERVAL) {
-        int energia = max(ENERGIA_INICIAL - (millis() - tiempo_inicial) / 16, 0);
+        int energia = ENERGIA_INICIAL - (millis() - tiempo_inicial) / 16;
         display_show_energia(energia);
         last_change = millis();
-        if (energia == 0) {
-            change_state(gameover_state);    
+        if (energia < 0) {
+            change_state(&gameover_state);    
         }
     }
 }
@@ -130,9 +130,9 @@ void PlayState::loop()
     mostrar_energia();
     
 #ifdef DEBUG
-    if (digitalRead(DEBUG_PIN) == LOW) {
-        change_state(gameover_state);    
-    }
+//    if (digitalRead(DEBUG_PIN) == LOW) {
+//        change_state(gameover_state);    
+//    }
 /*
     static int l = 0;
     if ((l++)%30 == 0) {
