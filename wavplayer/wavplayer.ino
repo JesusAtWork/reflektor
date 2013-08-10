@@ -60,9 +60,16 @@ void serialEvent() {
 
 void loop() {
   if (stringComplete) {
-    char filename[13];
-    inputString.toCharArray(filename, 13);
-    play(filename);
+    if (inputString.startsWith("play:")) {
+      char c_filename[13];
+      String filename = inputString.substring(5) + ".wav";
+      filename.toCharArray(c_filename, 13);
+      play(c_filename);
+    } else if (inputString == "stop") {
+      if (wave.isplaying) {
+        wave.stop();
+      }
+    }
     inputString = "";
     stringComplete = false;
   }

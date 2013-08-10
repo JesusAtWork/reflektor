@@ -16,7 +16,7 @@ void PlayState::verificar_sensor1() {
 
         if (sensor1 > MUCHA_LUZ && !fin_de_carrera_activado()) {
             if (estado_puerta == CERRADA) {
-                Serial.println("track:puerta");
+                play_track("alarma");
             }
             estado_puerta = ABRIENDO;
             carrito.setMaxSpeed(VELOCIDAD_ABRIENDO);
@@ -26,7 +26,7 @@ void PlayState::verificar_sensor1() {
 
         if (estado_puerta == CERRANDO && carrito.distanceToGo() == 0 ) {
             estado_puerta = CERRADA;
-            Serial.println("track:juego");
+            play_track("game2");
         }
     }
 }
@@ -35,7 +35,7 @@ void PlayState::verificar_sensor2() {
     int sensor2 = analogRead(SENSOR0);
     if (sensor2 > MUCHA_LUZ) {
         // ganaste!
-        Serial.println("track:gameover");
+        play_track("gameover");
         change_state (&gameover_state);
     }
 }
@@ -106,7 +106,7 @@ void PlayState::setup() {
     espejo_activo = 0;
     mostrar_espejo_activo();
     digitalWrite(LED_GANASTE, LOW);
-    Serial.println("track:juego");
+    play_track("game1");
     tiempo_inicial = millis();
 }
 
@@ -116,6 +116,7 @@ void PlayState::mostrar_energia() {
         display_show_energia(energia);
         last_change = millis();
         if (energia < 0) {
+            play_track("gameover");
             change_state(&gameover_state);    
         }
     }

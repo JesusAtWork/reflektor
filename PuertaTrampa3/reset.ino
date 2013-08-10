@@ -25,7 +25,7 @@ void ResetState::cerrar_puerta() {
 void ResetState::setup() {
     digitalWrite(LED_GANASTE, LOW);
     display_show_energia(ENERGIA_INICIAL);
-    Serial.println("reset");
+    stop_audio();
     ir_al_fin_carrera();
 }
 

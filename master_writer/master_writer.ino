@@ -10,19 +10,31 @@ void play(char* trackname)
 {
   digitalWrite(13, HIGH);
   Wire.beginTransmission(4);
+  Wire.write("play:");
   Wire.write(trackname);
+  Wire.endTransmission();
+  digitalWrite(13, LOW);
+}
+
+void stop()
+{
+  digitalWrite(13, HIGH);
+  Wire.beginTransmission(4);
+  Wire.write("stop");
   Wire.endTransmission();
   digitalWrite(13, LOW);
 }
 
 void loop()
 {
-  play("gameover.wav");
+  play("gameover");
   delay(3000);
-  play("game1.wav");
+  play("game1");
   delay(3000);
-  play("alarma.wav");
+  play("alarma");
   delay(3000);
-  play("game2.wav");
+  play("game2");
   delay(3000);
+  stop();
+  delay(1000);  
 }
