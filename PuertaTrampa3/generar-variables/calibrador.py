@@ -50,17 +50,21 @@ class TuneinoWindow(QtGui.QWidget):
         self.setWindowTitle('Tuneino')    
         self.show()
         
-    def update(self, index, value):
+    def update(self, index, value, feedback=True):
         self.sliders[index].setValue(value)
         line = "set %d %d\n" % (index, value)
-        #print "out:", line,
-        self.serialport.write(line)
+        if feedback:
+            self.serialport.write(line)
     
     def read_serial(self):
-        line = self.serialport.readline()
+        line = self.serialport.readline().strip()
         while line:
-            print "in: ", line,
-            line = self.serialport.readline()
+            print line
+            if line.startswith("set"):
+                n, x = map(int, line[4:].split(" "))
+                self.update(n, x, feedback=False)
+                print "setting", n, "=", x
+            line = self.serialport.readline().strip()
 
 def main():
     app = QtGui.QApplication(sys.argv)
