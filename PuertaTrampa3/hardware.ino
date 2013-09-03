@@ -6,17 +6,18 @@ void display_show_energia(int valor) {
 
 void play_track(char* trackname)
 {
-  digitalWrite(13, HIGH);
+  //digitalWrite(13, HIGH);
   Wire.beginTransmission(4);
   Wire.write("play:");
   Wire.write(trackname);
   Wire.endTransmission();
-  digitalWrite(13, LOW);
+  //digitalWrite(13, LOW);
+  
 }
 
 void stop_audio()
 {
   Wire.beginTransmission(4);
   Wire.write("stop");
-  Wire.endTransmission();  
+  Wire.endTransmission();
 }

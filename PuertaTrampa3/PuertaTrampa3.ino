@@ -1,4 +1,5 @@
 #include <AccelStepper.h>
+#include <Wire.h>
 #include <Stepper595.h>
 #include <display16.h>
 #include "variables.h"
@@ -27,8 +28,8 @@ const byte SRCLK_Pin = 7;   //pin 11 on the 75HC595
 const byte LED_ESPEJO1 = 10; // 11 y 12 son los otros espejos
 const byte LED_GANASTE = 13;
 
-const byte SENSOR0 = A0;
-const byte SENSOR1 = A1;
+const byte SENSOR0 = A2;
+const byte SENSOR1 = A3;
 
 const int ENERGIA_INICIAL = 10000;
 
