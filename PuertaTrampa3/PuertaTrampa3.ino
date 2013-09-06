@@ -10,21 +10,23 @@
 
 #define DEBUG
 
-const byte FIN_CARRERA_PIN = 3;
+// FIXME: hacerles PULLUP!!!
+const byte FIN_CARRERA_PIN = 7;
 const byte BOTON_CAMBIO = 4;
 const byte BOTON_IZQUIERDO = 5;
 const byte BOTON_DERECHO = 6;
 
 const byte DISPLAY_LEN = 5;
 
-const byte ENABLE_5484 = 2;
-const byte CLOCK_5484  = 7;
-const byte DATA_5484   = 8;
+const byte ENABLE_5484 = 9;
+const byte CLOCK_5484  = 10;
+const byte DATA_5484   = 11;
 
-const byte SER_Pin   = 8;   //pin 14 on the 75HC595   
-const byte RCLK_Pin  = 9;   //pin 12 on the 75HC595   
-const byte SRCLK_Pin = 7;   //pin 11 on the 75HC595
+const byte SER_Pin   = 11;   //pin 14 on the 75HC595   
+const byte RCLK_Pin  = 12;   //pin 12 on the 75HC595   
+const byte SRCLK_Pin = 10;   //pin 11 on the 75HC595
 
+// FIXME!!! cambiar a pines del tren de 595, pines 17, 18, 19 y 20
 const byte LED_ESPEJO1 = 10; // 11 y 12 son los otros espejos
 const byte LED_GANASTE = 13;
 
