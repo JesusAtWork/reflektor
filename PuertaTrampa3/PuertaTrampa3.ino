@@ -19,12 +19,12 @@ const byte BOTON_DERECHO = 6;
 const byte DISPLAY_LEN = 5;
 
 const byte ENABLE_5484 = 9;
-const byte CLOCK_5484  = 10;
-const byte DATA_5484   = 11;
+const byte CLOCK_5484  = 12;
+const byte DATA_5484   = 10;
 
-const byte SER_Pin   = 11;   //pin 14 on the 75HC595   
-const byte RCLK_Pin  = 12;   //pin 12 on the 75HC595   
-const byte SRCLK_Pin = 10;   //pin 11 on the 75HC595
+const byte SER_Pin   = 10;   //pin 14 on the 75HC595   
+const byte RCLK_Pin  = 11;   //pin 12 on the 75HC595   
+const byte SRCLK_Pin = 12;   //pin 11 on the 75HC595
 
 // FIXME!!! cambiar a pines del tren de 595, pines 17, 18, 19 y 20
 const byte LED_ESPEJO1 = 10; // 11 y 12 son los otros espejos
@@ -37,10 +37,10 @@ const int ENERGIA_INICIAL = 10000;
 
 Display16 display(DISPLAY_LEN, ENABLE_5484, CLOCK_5484, DATA_5484);
 StepperTrain Stepper::train = StepperTrain();
-Stepper carrito(4, 6, 5, 7);
-Stepper espejo1(0, 1, 2, 3);
-Stepper espejo2(8, 9, 10, 11);  
-Stepper espejo3(12, 13, 14, 15);
+Stepper espejo3(0, 1, 2, 3);
+Stepper espejo2(4, 5, 6, 7);
+Stepper espejo1(8, 9, 10, 11);  
+Stepper carrito(12, 13, 14, 15);
 
 typedef enum {ABRIENDO, CERRANDO, CERRADA} EstadosPuerta;
 EstadosPuerta estado_puerta;
