@@ -51,8 +51,8 @@ void PlayState::mover_espejo(int espejo, int direccion) {
 }
 
 void PlayState::procesar_botones_izquierda_derecha() {
-    boolean izquierdo = digitalRead(BOTON_IZQUIERDO) == HIGH;
-    boolean derecho = digitalRead(BOTON_DERECHO) == HIGH;
+    boolean izquierdo = digitalRead(BOTON_IZQUIERDO) == LOW;
+    boolean derecho = digitalRead(BOTON_DERECHO) == LOW;
 
     if (izquierdo == true && derecho == false) {
         mover_espejo(espejo_activo, -MOVIMIENTO_ESPEJO);
@@ -69,13 +69,13 @@ void PlayState::procesar_botones_izquierda_derecha() {
 
 void PlayState::mostrar_espejo_activo () {
     for (int k=0; k<3; k++) {
-        digitalWrite(LED_ESPEJO1+k, espejo_activo == k ? HIGH : LOW);
+        Stepper::train.setRegisterPin(LED_ESPEJO1+k, espejo_activo == k ? HIGH : LOW);
     }
 }
 
 void PlayState::procesar_boton_cambio_espejo() {
     static boolean estado_anterior = false;
-    boolean estado_actual = digitalRead(BOTON_CAMBIO) == HIGH;
+    boolean estado_actual = digitalRead(BOTON_CAMBIO) == LOW;
 
     if ( estado_actual == true && estado_anterior == false) {
         espejo_activo = (espejo_activo + 1) % 3;
@@ -122,11 +122,25 @@ void PlayState::mostrar_energia() {
     }
 }
 
+void titilar_led_ldr() {
+  boolean estado = (millis() / 100)%2;
+  
+  if (estado_puerta == CERRADA) {
+    Stepper::train.setRegisterPin(LED_SENSOR0, LOW);
+    Stepper::train.setRegisterPin(LED_SENSOR1, estado);
+  } else {
+    Stepper::train.setRegisterPin(LED_SENSOR1, LOW);
+    Stepper::train.setRegisterPin(LED_SENSOR0, estado);
+  }
+}
+
 void PlayState::loop()
 {
+    Stepper::train.setRegisterPin(ENABLE_LASER, HIGH);
     verificar_sensor2();
     verificar_sensor1();
     procesar_botonera();
+    titilar_led_ldr();
     //scrollear_texto();
     mostrar_energia();
     
@@ -134,15 +148,17 @@ void PlayState::loop()
 //    if (digitalRead(DEBUG_PIN) == LOW) {
 //        change_state(gameover_state);    
 //    }
-/*
+
     static int l = 0;
     if ((l++)%30 == 0) {
+        int sensor0 = analogRead(SENSOR0);
+        int sensor1 = analogRead(SENSOR1);
         Serial.print("debug:");
-        //Serial.print(sensor1);
+        Serial.print(sensor0);
         Serial.print(" - ");
-        //Serial.println(sensor2);
+        Serial.println(sensor1);
     }
-*/
+
 #endif
 }
 

@@ -6,10 +6,11 @@ void GameoverState::setup() {
     espejo1.stop();
     espejo2.stop();
     espejo3.stop();
-    digitalWrite(LED_GANASTE, HIGH);
+    Stepper::train.setRegisterPin(LED_GANASTE, HIGH);
     start_time = millis();
     last_change = start_time - 1000;
     pos = 0;
+    Stepper::train.setRegisterPin(ENABLE_LASER, LOW);
 }
 
 
@@ -19,7 +20,7 @@ void GameoverState::loop() {
 //        change_state(reset_state);
 //    }
 #endif
-    digitalWrite(LED_GANASTE, (((millis() - start_time) / 100) % 2)?HIGH:LOW);
+    Stepper::train.setRegisterPin(LED_GANASTE, (((millis() - start_time) / 100) % 2)?HIGH:LOW);
     
     if (millis() > last_change + 200) {
         last_change = millis();

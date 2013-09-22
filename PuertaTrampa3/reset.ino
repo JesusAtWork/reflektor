@@ -27,6 +27,7 @@ void ResetState::setup() {
     display_show_energia(ENERGIA_INICIAL);
     stop_audio();
     ir_al_fin_carrera();
+
 }
 
 void ResetState::loop() {
@@ -36,13 +37,17 @@ void ResetState::loop() {
 //    }
 #endif
     if (estado_puerta == ABRIENDO) {
+        Stepper::train.setRegisterPin(LED_GANASTE, HIGH);
         if (fin_de_carrera_activado() || carrito.distanceToGo() == 0) {
             cerrar_puerta();
         }
     } else { // estado_puerta == CERRANDO
+        Stepper::train.setRegisterPin(LED_GANASTE, HIGH);
         if (carrito.distanceToGo() == 0) {
             estado_puerta = CERRADA;
             change_state(&play_state);
         }
     }
+    
+    Stepper::train.setRegisterPin(ENABLE_LASER, ((millis() / 100) % 2)?HIGH:LOW);
 }

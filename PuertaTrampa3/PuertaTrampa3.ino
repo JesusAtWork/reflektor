@@ -12,9 +12,9 @@
 
 // FIXME: hacerles PULLUP!!!
 const byte FIN_CARRERA_PIN = 7;
-const byte BOTON_CAMBIO = 4;
-const byte BOTON_IZQUIERDO = 5;
-const byte BOTON_DERECHO = 6;
+const byte BOTON_CAMBIO = 5;
+const byte BOTON_IZQUIERDO = 6;
+const byte BOTON_DERECHO = 4;
 
 const byte DISPLAY_LEN = 5;
 
@@ -26,21 +26,24 @@ const byte SER_Pin   = 10;   //pin 14 on the 75HC595
 const byte RCLK_Pin  = 11;   //pin 12 on the 75HC595   
 const byte SRCLK_Pin = 12;   //pin 11 on the 75HC595
 
-// FIXME!!! cambiar a pines del tren de 595, pines 17, 18, 19 y 20
-const byte LED_ESPEJO1 = 10; // 11 y 12 son los otros espejos
-const byte LED_GANASTE = 13;
+const byte LED_ESPEJO1 = 16; // 17 y 18 son los otros espejos
+const byte LED_GANASTE = 21;
 
-const byte SENSOR0 = A2;
-const byte SENSOR1 = A3;
+const byte LED_SENSOR0 = 22;
+const byte LED_SENSOR1 = 23;
+const byte ENABLE_LASER = 20;
+
+const byte SENSOR0 = A3;
+const byte SENSOR1 = A2;
 
 const int ENERGIA_INICIAL = 10000;
 
 Display16 display(DISPLAY_LEN, ENABLE_5484, CLOCK_5484, DATA_5484);
 StepperTrain Stepper::train = StepperTrain();
-Stepper espejo3(0, 1, 2, 3);
+Stepper espejo1(0, 1, 2, 3);
 Stepper espejo2(4, 5, 6, 7);
-Stepper espejo1(8, 9, 10, 11);  
-Stepper carrito(12, 13, 14, 15);
+Stepper espejo3(8, 9, 10, 11);  
+Stepper carrito(15, 14, 13, 12);
 
 typedef enum {ABRIENDO, CERRANDO, CERRADA} EstadosPuerta;
 EstadosPuerta estado_puerta;
@@ -77,7 +80,7 @@ void steppers_go () {
 }
 
 boolean inline fin_de_carrera_activado() {
-    return digitalRead(FIN_CARRERA_PIN) == HIGH;
+    return digitalRead(FIN_CARRERA_PIN) == LOW;
 }
 
 class GameoverState : public State {
@@ -168,10 +171,10 @@ void setup() {
     pinMode(LED_ESPEJO1 + 2, OUTPUT);
     pinMode(LED_GANASTE, OUTPUT);
 
-    pinMode(FIN_CARRERA_PIN, INPUT);
-    pinMode(BOTON_CAMBIO, INPUT);
-    pinMode(BOTON_IZQUIERDO, INPUT);
-    pinMode(BOTON_DERECHO, INPUT);
+    pinMode(FIN_CARRERA_PIN, INPUT_PULLUP);
+    pinMode(BOTON_CAMBIO, INPUT_PULLUP);
+    pinMode(BOTON_IZQUIERDO, INPUT_PULLUP);
+    pinMode(BOTON_DERECHO, INPUT_PULLUP);
     
     Stepper::train.setup(SER_Pin, RCLK_Pin, SRCLK_Pin);
     
