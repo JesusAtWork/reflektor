@@ -43,7 +43,7 @@ void GameoverState::loop() {
     if (millis() < start_time + GAMEOVER_DELAY/2) {
         Stepper::train.setRegisterPin(ENABLE_LASER, (millis()/100)%2);
     } else {
-        Stepper::train.setRegisterPin(ENABLE_LASER, LOW)
+        Stepper::train.setRegisterPin(ENABLE_LASER, LOW);
     }
     
     if (millis() > start_time + GAMEOVER_DELAY) {
