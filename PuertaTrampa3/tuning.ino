@@ -1,4 +1,3 @@
-#ifdef DEBUG
 void update_variables() {
     carrito.setMaxSpeed(VELOCIDAD_ABRIENDO);
     carrito.setAcceleration(ACELERACION_ABRIENDO);
@@ -17,6 +16,7 @@ void update_variables() {
     espejo3.delay_before_fullstop = DELAY_BEFORE_FULLSTOP;
 }
 
+#ifdef DEBUG
 String inputString = "";
 
 void parseLine() {

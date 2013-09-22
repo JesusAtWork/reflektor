@@ -1,25 +1,31 @@
 const char* GAMEOVER_MESSAGE = "    GAME OVER     ";
-const int GAMEOVER_DELAY = 5000;
+const int GAMEOVER_DELAY = 8000;
 
-void GameoverState::setup() {
+void GameoverState::apagar_todo() {
     carrito.stop();
     espejo1.stop();
     espejo2.stop();
     espejo3.stop();
     carrito.setMaxSpeed(VELOCIDAD_ABRIENDO);
     carrito.setAcceleration(ACELERACION_ABRIENDO);
-    carrito.move(-PUERTA_CERRADA * 2);
+    carrito.move(0);
 
-    Stepper::train.setRegisterPin(LED_GANASTE, HIGH);
     start_time = millis();
     last_change = start_time - 1000;
     pos = 0;
+
+    Stepper::train.setRegisterPin(LED_GANASTE, LOW);
     Stepper::train.setRegisterPin(LED_SENSOR0, LOW);
     Stepper::train.setRegisterPin(LED_SENSOR1, LOW);
-    
     Stepper::train.setRegisterPin(LED_ESPEJO1, LOW);
     Stepper::train.setRegisterPin(LED_ESPEJO1+1, LOW);
     Stepper::train.setRegisterPin(LED_ESPEJO1+2, LOW);
+}
+
+void GameoverState::setup() {
+    play_track("gameover");
+
+    apagar_todo();
 }
 
 
@@ -29,11 +35,10 @@ void GameoverState::loop() {
 //        change_state(reset_state);
 //    }
 #endif
-    Stepper::train.setRegisterPin(LED_GANASTE, (((millis() - start_time) / 100) % 2)?HIGH:LOW);
-    
+    display.show(&GAMEOVER_MESSAGE[pos]);
+
     if (millis() > last_change + 200) {
         last_change = millis();
-        display.show(&GAMEOVER_MESSAGE[pos]);
         pos ++;
         if (GAMEOVER_MESSAGE[pos + DISPLAY_LEN] == '\0') {
           pos = 0;
@@ -47,7 +52,7 @@ void GameoverState::loop() {
     }
     
     if (millis() > start_time + GAMEOVER_DELAY) {
-        change_state(&inputinitials_state);
+        change_state(&reset_state);
     }
 }
 

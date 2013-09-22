@@ -35,8 +35,7 @@ void PlayState::verificar_sensor2() {
     int sensor2 = analogRead(SENSOR0);
     if (sensor2 > MUCHA_LUZ) {
         // ganaste!
-        play_track("youwin");
-        change_state (&gameover_state);
+        change_state (&ganaste_state);
     }
 }
 
@@ -116,7 +115,6 @@ void PlayState::mostrar_energia() {
         display_show_energia(energia);
         last_change = millis();
         if (energia < 0) {
-            play_track("gameover");
             change_state(&gameover_state);    
         }
     }

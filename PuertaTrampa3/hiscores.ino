@@ -34,12 +34,14 @@ boolean InputInitialsState::is_blinking() {
 
 void InputInitialsState::display_cursor() {
   if (is_blinking()) {
-    char* c = &buffer[cursor];
+    buffer[cursor] = '_';
+/*    char* c = &buffer[cursor];
     if (*c == ' ') {
       *c = '_';
     } else {
       *c = ' ';
     }
+*/
   }
 }
 
@@ -50,13 +52,14 @@ void InputInitialsState::update_display() {
 }
 
 void InputInitialsState::change_display(int d) {
-  initials[cursor] = initials[cursor] + d;
-  if (initials[cursor] < 0) {
-    initials[cursor] = sizeof(charset) - 2;
+  int new_char = initials[cursor] + d;
+  if (new_char < 0) {
+    new_char = sizeof(charset) - 2;
   }
-  if (initials[cursor] == sizeof(charset) - 1) {
-    initials[cursor] = 0;
+  if (new_char == sizeof(charset) - 1) {
+    new_char = 0;
   }
+  initials[cursor] = new_char;
 }
 
 void InputInitialsState::setup () {
@@ -91,6 +94,8 @@ void save_initials() {
 }
 
 void InputInitialsState::loop() {
+Stepper::train.setRegisterPin(LED_GANASTE, ((millis() / 100) % 2)?HIGH:LOW);
+
   byte keystatus = getKeystatus();
 
   if (keystatus != prev_keystatus) {

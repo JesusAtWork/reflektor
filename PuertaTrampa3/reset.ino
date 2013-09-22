@@ -23,8 +23,15 @@ void ResetState::cerrar_puerta() {
 }
 
 void ResetState::setup() {
-    digitalWrite(LED_GANASTE, LOW);
-    display_show_energia(ENERGIA_INICIAL);
+  
+    Stepper::train.setRegisterPin(LED_GANASTE, LOW);
+    Stepper::train.setRegisterPin(LED_SENSOR0, LOW);
+    Stepper::train.setRegisterPin(LED_SENSOR1, LOW);
+    
+    Stepper::train.setRegisterPin(LED_ESPEJO1, LOW);
+    Stepper::train.setRegisterPin(LED_ESPEJO1+1, LOW);
+    Stepper::train.setRegisterPin(LED_ESPEJO1+2, LOW);
+
     stop_audio();
     ir_al_fin_carrera();
 
@@ -36,6 +43,8 @@ void ResetState::loop() {
 //        change_state(play_state);    
 //    }
 #endif
+    display_show_energia(ENERGIA_INICIAL);
+
     if (estado_puerta == ABRIENDO) {
         Stepper::train.setRegisterPin(LED_GANASTE, HIGH);
         if (fin_de_carrera_activado() || carrito.distanceToGo() == 0) {
@@ -46,6 +55,7 @@ void ResetState::loop() {
         if (carrito.distanceToGo() == 0) {
             estado_puerta = CERRADA;
             change_state(&play_state);
+            //change_state(&inputinitials_state);
         }
     }
     

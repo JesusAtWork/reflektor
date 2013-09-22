@@ -84,6 +84,7 @@ boolean inline fin_de_carrera_activado() {
 }
 
 class GameoverState : public State {
+protected:
     unsigned long start_time;
     unsigned long last_change;
     int pos;
@@ -91,9 +92,19 @@ public:
     const char* name() {
       return "Game Over";
     }
+    void apagar_todo();
     void setup();
     void loop();
 } gameover_state;
+
+class GanasteState : public GameoverState {
+public:
+    const char* name() {
+      return "Ganaste";
+    }
+    void setup();
+    void loop();
+} ganaste_state;
 
 class PlayState : public State {
     unsigned long last_change;
