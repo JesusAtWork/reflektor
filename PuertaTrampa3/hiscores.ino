@@ -67,7 +67,7 @@ void InputInitialsState::setup () {
     initials[n] = charset_initial;
   }
   last_change_time = millis();
-  cursor = 0;
+  cursor = -1;
   prev_keystatus = 0;
   display_delay = MAX_DISPLAY_DELAY;
   space_was_pressed = false;

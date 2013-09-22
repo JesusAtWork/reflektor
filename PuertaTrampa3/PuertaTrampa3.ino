@@ -148,7 +148,7 @@ class InputInitialsState : public State {
   int display_delay;
   
   void convert_buffer();
-  inline boolean is_blinking();
+  boolean is_blinking();
   void display_cursor();
   void update_display();
   void change_display(int d);
