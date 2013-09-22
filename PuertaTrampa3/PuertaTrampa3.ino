@@ -33,8 +33,8 @@ const byte LED_SENSOR0 = 22;
 const byte LED_SENSOR1 = 23;
 const byte ENABLE_LASER = 20;
 
-const byte SENSOR0 = A3;
-const byte SENSOR1 = A2;
+const byte SENSOR0 = A2;
+const byte SENSOR1 = A3;
 
 const int ENERGIA_INICIAL = 10000;
 
@@ -166,10 +166,13 @@ void setup() {
     Serial.println("-------------------------");
     stop_audio();
 
+/*
+    se hacen por 595
     pinMode(LED_ESPEJO1 + 0, OUTPUT);
     pinMode(LED_ESPEJO1 + 1, OUTPUT);
     pinMode(LED_ESPEJO1 + 2, OUTPUT);
     pinMode(LED_GANASTE, OUTPUT);
+*/
 
     pinMode(FIN_CARRERA_PIN, INPUT_PULLUP);
     pinMode(BOTON_CAMBIO, INPUT_PULLUP);
