@@ -6,11 +6,20 @@ void GameoverState::setup() {
     espejo1.stop();
     espejo2.stop();
     espejo3.stop();
+    carrito.setMaxSpeed(VELOCIDAD_ABRIENDO);
+    carrito.setAcceleration(ACELERACION_ABRIENDO);
+    carrito.move(-PUERTA_CERRADA * 2);
+
     Stepper::train.setRegisterPin(LED_GANASTE, HIGH);
     start_time = millis();
     last_change = start_time - 1000;
     pos = 0;
-    Stepper::train.setRegisterPin(ENABLE_LASER, LOW);
+    Stepper::train.setRegisterPin(LED_SENSOR0, LOW);
+    Stepper::train.setRegisterPin(LED_SENSOR1, LOW);
+    
+    Stepper::train.setRegisterPin(LED_ESPEJO1, LOW);
+    Stepper::train.setRegisterPin(LED_ESPEJO1+1, LOW);
+    Stepper::train.setRegisterPin(LED_ESPEJO1+2, LOW);
 }
 
 
@@ -29,6 +38,12 @@ void GameoverState::loop() {
         if (GAMEOVER_MESSAGE[pos + DISPLAY_LEN] == '\0') {
           pos = 0;
         }
+    }
+    
+    if (millis() < start_time + GAMEOVER_DELAY/2) {
+        Stepper::train.setRegisterPin(ENABLE_LASER, (millis()/100)%2);
+    } else {
+        Stepper::train.setRegisterPin(ENABLE_LASER, LOW)
     }
     
     if (millis() > start_time + GAMEOVER_DELAY) {
