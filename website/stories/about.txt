@@ -1,0 +1,21 @@
+.. link: 
+.. description: 
+.. tags: 
+.. date: 2013/09/25 00:08:05
+.. title: About
+.. slug: about
+
+About Reflektor
+---------------
+
+REFLEKTOR - is the first in a series of games inspired equally in old and new videogames, and also in the wonderful games from the `Museum of soviet arcade machines <http://www.15kop.ru/en/museum>`_.
+
+This time the challenge was taking the main idea of `Deflektor <http://www.youtube.com/watch?v=1JrhRKtzuQg>`_, a 1987 videogame for the Spectrum computer where the player can only interact with a few mirrors that reflect a laser beam, and trying to come up with some physical representation that was enjoyable both as an art piece and as a game.
+
+Arduino code and Fritzing electronic schematics for Reflektor are open so you can build your own, and can be downloaded from: http://github.com/clubdejaqueo/reflektor
+
+The Team
+--------
+* bits & volts: alecu
+* soundwaves: cristian martinez
+* atoms: club de jaqueo
