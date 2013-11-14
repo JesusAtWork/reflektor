@@ -13,10 +13,9 @@ void PlayState::verificar_sensor1() {
         }
 
         if (sensor1 > MUCHA_LUZ && !fin_de_carrera_activado()) {
+            carga1.llenar();
             if (estado_puerta == CERRADA) {
                 play_track("alarma");
-                carga1.prendiendo();
-                carga0.apagando();
             }
             estado_puerta = ABRIENDO;
             carrito.setMaxSpeed(VELOCIDAD_ABRIENDO);
@@ -27,8 +26,6 @@ void PlayState::verificar_sensor1() {
         if (estado_puerta == CERRANDO && carrito.distanceToGo() == 0 ) {
             estado_puerta = CERRADA;
             play_track("game2");
-            carga0.prendiendo();
-            carga1.apagando();
         }
     }
 }
@@ -37,6 +34,7 @@ void PlayState::verificar_sensor0() {
     int sensor0 = carga0.lectura_sensor();
     if (sensor0 > MUCHA_LUZ) {
         // ganaste!
+        carga0.llenar();
         change_state (&ganaste_state);
     }
 }

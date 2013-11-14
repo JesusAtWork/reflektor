@@ -8,13 +8,16 @@
 
 enum { PRENDIENDO, APAGANDO };
 
+const int TIEMPO_ENCENDIDO = 1000;
+
 class LuzCarga {
 public:
   Adafruit_NeoPixel pixels;
   int intensidad;
   int estado;
   int sensor;
- 
+  unsigned long start_time;
+
   LuzCarga(int pin_datos, int input_sensor) : pixels(8, pin_datos, NEO_GRB + NEO_KHZ800), intensidad(0), estado(APAGANDO), sensor(input_sensor) {
   }
   
@@ -22,14 +25,17 @@ public:
     pixels.begin();
   }
 
-  void prendiendo () {
+  void llenar () {
     estado = PRENDIENDO;
+    start_time = millis();
   }
 
-  void apagando () {
+  void reset() {
     estado = APAGANDO;
+    intensidad = 0;
+    actualizar();
   }
-
+  
   void loop() {
     if (estado==APAGANDO && intensidad > 0) {
       intensidad--;
@@ -38,6 +44,9 @@ public:
     if (estado==PRENDIENDO && intensidad < 255) {
       intensidad++;
       actualizar();
+    }
+    if (intensidad == 255 && millis() > start_time + TIEMPO_ENCENDIDO) {
+      estado = APAGANDO;
     }
   }
   
@@ -49,8 +58,13 @@ public:
   }
 
   int lectura_sensor() {
-    int lectura = analogRead(sensor);
-    return lectura;
+    if (intensidad == 0) {
+      int lectura = analogRead(sensor);
+      return lectura;
+    } else {
+      // si la tira de leds esta prendida, ignorar el valor
+      return 0;
+    }
   }
 };
 
