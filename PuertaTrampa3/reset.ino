@@ -34,7 +34,9 @@ void ResetState::setup() {
 
     stop_audio();
     ir_al_fin_carrera();
-
+    //FIXME: sacar esto de aca abajo
+    carga0.prendiendo();
+    carga1.prendiendo();
 }
 
 void ResetState::loop() {
@@ -55,6 +57,10 @@ void ResetState::loop() {
         if (carrito.distanceToGo() == 0) {
             estado_puerta = CERRADA;
             change_state(&play_state);
+            //FIXME: sacar esto de aca abajo
+            carga0.apagando();
+            carga1.apagando();
+
             //change_state(&inputinitials_state);
         }
     }
