@@ -13,8 +13,9 @@ public:
   Adafruit_NeoPixel pixels;
   int intensidad;
   int estado;
+  int sensor;
  
-  LuzCarga(int pin_datos) : pixels(8, pin_datos, NEO_GRB + NEO_KHZ800), intensidad(0), estado(APAGANDO) {
+  LuzCarga(int pin_datos, int input_sensor) : pixels(8, pin_datos, NEO_GRB + NEO_KHZ800), intensidad(0), estado(APAGANDO), sensor(input_sensor) {
   }
   
   void setup() {
@@ -47,6 +48,10 @@ public:
     pixels.show();
   }
 
+  int lectura_sensor() {
+    int lectura = analogRead(sensor);
+    return lectura;
+  }
 };
 
 // PENDIENTES:
@@ -156,8 +161,8 @@ public:
 class PlayState : public State {
     unsigned long last_change;
     int n;
+    void verificar_sensor0();
     void verificar_sensor1();
-    void verificar_sensor2();
     void mover_espejo(int espejo, int direccion);
     void procesar_botones_izquierda_derecha();
     void mostrar_espejo_activo();
@@ -223,8 +228,8 @@ public:
 } inputinitials_state;
 
 State* State::current_state = &inputinitials_state;
-LuzCarga carga0(PIN_LUZCARGA0);
-LuzCarga carga1(PIN_LUZCARGA1);
+LuzCarga carga0(PIN_LUZCARGA0, SENSOR0);
+LuzCarga carga1(PIN_LUZCARGA1, SENSOR1);
 
 void setup() {
     Serial.begin(115200);
