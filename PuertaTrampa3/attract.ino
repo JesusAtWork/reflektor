@@ -9,7 +9,7 @@ void AttractState::setup() {
     carga1.reset();
 }
 
-const char *texto = "     PE()EKTOP [REFLEKTOR] - PRESIONE LOS DOS BOTONES ROJOS      \0";
+const char *texto = "     PE()EKTOP *** REFLEKTOR *** PRESIONE LOS DOS BOTONES ROJOS ***     \0";
 
 void AttractState::scrollear_texto() {
     display.show(&texto[n]);

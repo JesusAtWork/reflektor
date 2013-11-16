@@ -1,4 +1,3 @@
-char mostrar[6];
 prog_char agradecimientos[] PROGMEM = ""
   
   "     PE()EKTOP [reflektor] *#*#*#*# "
@@ -36,11 +35,11 @@ void ThanksState::scrollear_texto() {
         }
     }
     for (int j=0; j<5; j++) {
-      mostrar[j] = pgm_read_byte_near(agradecimientos+n+j);
+      buffer[j] = pgm_read_byte_near(agradecimientos+n+j);
     }
-    mostrar[5] = 0;
+    buffer[5] = 0;
     //Serial.println(mostrar);
-    display.show(mostrar);
+    display.show(buffer);
 
 }
 

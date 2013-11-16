@@ -207,6 +207,7 @@ public:
 } attract_state;
 
 class ThanksState : public State {
+    char buffer[6];
     unsigned long last_change;
     int n;
     boolean algun_boton();
@@ -221,8 +222,8 @@ public:
 } thanks_state;
 
 class InputInitialsState : public State {
-  unsigned long last_change_time;
-  int cursor;
+  long last_change_time;
+  int poscursor;
   byte initials[DISPLAY_LEN];
   char buffer[DISPLAY_LEN];
   byte prev_keystatus;
@@ -284,6 +285,8 @@ void setup() {
 
     carga0.setup();
     carga1.setup();
+//    State::change_state(&inputinitials_state);
+    
     State::change_state(&attract_state);
 }
 

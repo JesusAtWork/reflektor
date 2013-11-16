@@ -29,19 +29,21 @@ void InputInitialsState::convert_buffer() {
 }
  
 boolean InputInitialsState::is_blinking() {
-  return ((millis() - last_change_time) / BLINK_SPEED) % 2;
+  return ((millis() - 0) / BLINK_SPEED) % 2;
 }
 
 void InputInitialsState::display_cursor() {
   if (is_blinking()) {
-    buffer[cursor] = '_';
-/*    char* c = &buffer[cursor];
-    if (*c == ' ') {
+//    buffer[poscursor] = '_';
+    char* c = &buffer[poscursor];
+    if (*c == '<') {
+      // nada
+    } else if (*c == ' ') {
       *c = '_';
     } else {
       *c = ' ';
     }
-*/
+
   }
 }
 
@@ -52,14 +54,14 @@ void InputInitialsState::update_display() {
 }
 
 void InputInitialsState::change_display(int d) {
-  int new_char = initials[cursor] + d;
+  int new_char = initials[poscursor] + d;
   if (new_char < 0) {
     new_char = sizeof(charset) - 2;
   }
   if (new_char == sizeof(charset) - 1) {
     new_char = 0;
   }
-  initials[cursor] = new_char;
+  initials[poscursor] = new_char;
 }
 
 void InputInitialsState::setup () {
@@ -67,7 +69,7 @@ void InputInitialsState::setup () {
     initials[n] = charset_initial;
   }
   last_change_time = millis();
-  cursor = -1;
+  poscursor = -1;
   prev_keystatus = 0;
   display_delay = MAX_DISPLAY_DELAY;
   space_was_pressed = false;
@@ -115,12 +117,12 @@ Stepper::train.setRegisterPin(LED_GANASTE, ((millis() / 100) % 2)?HIGH:LOW);
   
   if (IS_SPACE_PRESSED) {
     if (!space_was_pressed) {
-      if (charset[initials[cursor]] == '<') {
-        initials[cursor] = charset_space;
-        cursor = max(0, cursor - 1);
-        initials[cursor] = charset_backspace;
+      if (charset[initials[poscursor]] == '<') {
+        initials[poscursor] = charset_space;
+        poscursor = max(0, poscursor - 1);
+        initials[poscursor] = charset_backspace;
       } else {
-        if (++cursor == DISPLAY_LEN) {
+        if (++poscursor == DISPLAY_LEN) {
           save_initials();
           play_track("youwin");
           change_state(&attract_state);
@@ -135,11 +137,12 @@ Stepper::train.setRegisterPin(LED_GANASTE, ((millis() / 100) % 2)?HIGH:LOW);
   if (IS_LEFT_PRESSED || IS_RIGHT_PRESSED) {
     unsigned long now = millis();
     if (now > (last_change_time + display_delay)) {
-      last_change_time = now;
       if (IS_LEFT_PRESSED) {
+        last_change_time = now;
         change_display(-1);
       }
       if (IS_RIGHT_PRESSED) {
+        last_change_time = now;
         change_display(1);
       }
       display_delay = max(display_delay - DISPLAY_ACCEL, MIN_DISPLAY_DELAY);
