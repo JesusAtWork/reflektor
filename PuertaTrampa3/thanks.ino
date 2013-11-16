@@ -1,3 +1,4 @@
+/*
 const int SCROLL_INTERVAL = 100;
 
 boolean ThanksState::algun_boton() {
@@ -13,7 +14,7 @@ void ThanksState::setup() {
 }
 
 const char *agradecimientos = ""
-  /*
+  
   "     PE()EKTOP [reflektor] *#*#*#*# "
   "bits & volts: alecu "
   "ondas sonoras: cristian martinez "
@@ -24,7 +25,7 @@ const char *agradecimientos = ""
   "* Bernardo, Merlina y todo el Club de Jaqueo "
   "* vanlit que ayudo un monton cuando quemaban las papas "
   "* y especialmente a Jorge Crowe "
-*/  "*#*#*#*#* 2013 Club de Jaqueo  *#*#*#*#*    \0";
+  "*#*#*#*#* 2013 Club de Jaqueo  *#*#*#*#*    \0";
 
 
 void ThanksState::scrollear_texto() {
@@ -48,3 +49,4 @@ void ThanksState::loop() {
     scrollear_texto();
     revisar_botones();
 }
+*/

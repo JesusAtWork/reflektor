@@ -1,4 +1,5 @@
 const int DISPLAY_UPDATE_INTERVAL = 100;
+const int SCROLL_INTERVAL = 200;
 
 void AttractState::setup() {
     last_change = 0;
@@ -8,13 +9,13 @@ void AttractState::setup() {
     carga1.reset();
 }
 
-const char *texto = "     PE()EKTOP [reflektor] - presione los dos botones rojos para comenzar      \0";
+const char *texto = "     PE()EKTOP [REFLEKTOR] - PRESIONE LOS DOS BOTONES ROJOS      \0";
 
 void AttractState::scrollear_texto() {
-    if (millis() > last_change + DISPLAY_UPDATE_INTERVAL) {
-        display.show(&texto[n]);
-        n++;
+    display.show(&texto[n]);
+    if (millis() > last_change + SCROLL_INTERVAL) {
         last_change = millis();
+        n++;
         if (texto[n+DISPLAY_LEN-1] == '\0') {
           n = 0;
         }
@@ -24,8 +25,12 @@ void AttractState::scrollear_texto() {
 void AttractState::revisar_botones() {   
     boolean izquierdo = digitalRead(BOTON_IZQUIERDO) == LOW;
     boolean derecho = digitalRead(BOTON_DERECHO) == LOW;
+    boolean cambio = digitalRead(BOTON_CAMBIO) == LOW;
 
-    if (izquierdo == true && derecho == true) {
+    if (izquierdo && derecho && cambio) {
+        change_state(&reset_state);
+    }
+    if (izquierdo && derecho) {
         change_state(&reset_state);
     }
 }
@@ -35,3 +40,4 @@ void AttractState::loop() {
     scrollear_texto();
     revisar_botones();
 }
+

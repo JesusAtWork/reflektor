@@ -13,12 +13,12 @@ const int TIEMPO_ENCENDIDO = 1000;
 class LuzCarga {
 public:
   Adafruit_NeoPixel pixels;
-  int intensidad;
+  int valor;
   int estado;
   int sensor;
   unsigned long start_time;
 
-  LuzCarga(int pin_datos, int input_sensor) : pixels(8, pin_datos, NEO_GRB + NEO_KHZ800), intensidad(0), estado(APAGANDO), sensor(input_sensor) {
+  LuzCarga(int pin_datos, int input_sensor) : pixels(8, pin_datos, NEO_GRB + NEO_KHZ800), valor(0), estado(APAGANDO), sensor(input_sensor) {
   }
   
   void setup() {
@@ -32,17 +32,19 @@ public:
 
   void reset() {
     estado = APAGANDO;
-    intensidad = 0;
+    valor = 0;
     actualizar();
   }
   
   void loop() {
-    if (estado==APAGANDO && intensidad > 0) {
-      intensidad--;
+    int intensidad = valor >>1;
+
+    if (estado==APAGANDO && valor > 0) {
+      valor--;
       actualizar();
     }
     if (estado==PRENDIENDO && intensidad < 255) {
-      intensidad++;
+      valor++;
       actualizar();
     }
     if (intensidad == 255 && millis() > start_time + TIEMPO_ENCENDIDO) {
@@ -51,14 +53,16 @@ public:
   }
   
   void actualizar() {
+    int intensidad = valor >>1;
+
     for(uint16_t i=0; i<pixels.numPixels(); i++) {
-      pixels.setPixelColor(i, pixels.Color(0, intensidad, 0));
+      pixels.setPixelColor(i, pixels.Color(intensidad, 0, 0));
     }
     pixels.show();
   }
 
   int lectura_sensor() {
-    if (intensidad == 0) {
+    if (valor == 0) {
       int lectura = analogRead(sensor);
       return lectura;
     } else {
@@ -99,8 +103,8 @@ const byte ENABLE_LASER = 20;
 const byte SENSOR0 = A2;
 const byte SENSOR1 = A3;
 
-const byte PIN_LUZCARGA0 = 2;
-const byte PIN_LUZCARGA1 = 3;
+const byte PIN_LUZCARGA0 = 3;
+const byte PIN_LUZCARGA1 = 2;
 
 const int ENERGIA_INICIAL = 10000;
 
@@ -204,6 +208,7 @@ public:
     void loop();
 } reset_state;
 
+
 class AttractState : public State {
     unsigned long last_change;
     int n;
@@ -216,7 +221,7 @@ public:
     void setup();
     void loop();
 } attract_state;
-
+/*
 class ThanksState : public State {
     unsigned long last_change;
     int n;
@@ -230,7 +235,7 @@ public:
     void setup();
     void loop();
 } thanks_state;
-
+*/
 class InputInitialsState : public State {
   unsigned long last_change_time;
   int cursor;
@@ -295,7 +300,7 @@ void setup() {
 
     carga0.setup();
     carga1.setup();
-    State::change_state(&reset_state);
+    State::change_state(&attract_state);
 }
 
 void loop() {
