@@ -28,9 +28,8 @@ void AttractState::revisar_botones() {
     boolean cambio = digitalRead(BOTON_CAMBIO) == LOW;
 
     if (izquierdo && derecho && cambio) {
-        change_state(&reset_state);
-    }
-    if (izquierdo && derecho) {
+        change_state(&thanks_state);
+    } else if (izquierdo && derecho) {
         change_state(&reset_state);
     }
 }

@@ -200,26 +200,26 @@ class AttractState : public State {
     void scrollear_texto();
 public:
     const char* name() {
-      return "Atract Mode";
+      return "Attract Mode";
     }
     void setup();
     void loop();
 } attract_state;
-/*
+
 class ThanksState : public State {
     unsigned long last_change;
     int n;
+    boolean algun_boton();
     void revisar_botones();
     void scrollear_texto();
-    boolean algun_boton();
 public:
     const char* name() {
-      return "Atract Mode";
+      return "Thanks Mode";
     }
     void setup();
     void loop();
 } thanks_state;
-*/
+
 class InputInitialsState : public State {
   unsigned long last_change_time;
   int cursor;

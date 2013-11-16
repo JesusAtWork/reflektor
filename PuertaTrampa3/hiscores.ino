@@ -122,7 +122,8 @@ Stepper::train.setRegisterPin(LED_GANASTE, ((millis() / 100) % 2)?HIGH:LOW);
       } else {
         if (++cursor == DISPLAY_LEN) {
           save_initials();
-          change_state(&reset_state);
+          play_track("youwin");
+          change_state(&attract_state);
         }
       }
       space_was_pressed = true;

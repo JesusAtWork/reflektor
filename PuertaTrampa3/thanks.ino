@@ -1,19 +1,5 @@
-/*
-const int SCROLL_INTERVAL = 100;
-
-boolean ThanksState::algun_boton() {
-  return digitalRead(BOTON_IZQUIERDO) == LOW || digitalRead(BOTON_DERECHO) == LOW || digitalRead(BOTON_CAMBIO) == LOW;
-}
-
-void ThanksState::setup() {
-    carga0.reset();
-    carga1.reset();
-    while(algun_boton()) {
-    }
-    play_track("alarma");
-}
-
-const char *agradecimientos = ""
+char mostrar[6];
+prog_char agradecimientos[] PROGMEM = ""
   
   "     PE()EKTOP [reflektor] *#*#*#*# "
   "bits & volts: alecu "
@@ -28,20 +14,39 @@ const char *agradecimientos = ""
   "*#*#*#*#* 2013 Club de Jaqueo  *#*#*#*#*    \0";
 
 
+boolean ThanksState::algun_boton() {
+  return digitalRead(BOTON_IZQUIERDO) == LOW || digitalRead(BOTON_DERECHO) == LOW || digitalRead(BOTON_CAMBIO) == LOW;
+}
+
+void ThanksState::setup() {
+    carga0.reset();
+    carga1.reset();
+    while(algun_boton()) {
+      delay(100);
+    }
+    play_track("alarma");
+}
+
 void ThanksState::scrollear_texto() {
-    if (millis() > last_change + DISPLAY_UPDATE_INTERVAL) {
+    if (millis() > last_change + SCROLL_INTERVAL) {
         n++;
         last_change = millis();
-        if (agradecimientos[n+DISPLAY_LEN-1] == '\0') {
+        if (pgm_read_byte_near(agradecimientos+n+DISPLAY_LEN-1) == '\0') {
           n = 0;
         }
     }
-    display.show(&agradecimientos[n]);
+    for (int j=0; j<5; j++) {
+      mostrar[j] = pgm_read_byte_near(agradecimientos+n+j);
+    }
+    mostrar[5] = 0;
+    //Serial.println(mostrar);
+    display.show(mostrar);
+
 }
 
 void ThanksState::revisar_botones() {   
     if (algun_boton()) {
-        change_state(&reset_state);
+        change_state(&attract_state);
     }
 }
 
@@ -49,4 +54,4 @@ void ThanksState::loop() {
     scrollear_texto();
     revisar_botones();
 }
-*/
+
