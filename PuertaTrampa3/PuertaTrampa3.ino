@@ -217,6 +217,20 @@ public:
     void loop();
 } attract_state;
 
+class ThanksState : public State {
+    unsigned long last_change;
+    int n;
+    void revisar_botones();
+    void scrollear_texto();
+    boolean algun_boton();
+public:
+    const char* name() {
+      return "Atract Mode";
+    }
+    void setup();
+    void loop();
+} thanks_state;
+
 class InputInitialsState : public State {
   unsigned long last_change_time;
   int cursor;
@@ -281,7 +295,7 @@ void setup() {
 
     carga0.setup();
     carga1.setup();
-    State::change_state(&attract_state);
+    State::change_state(&reset_state);
 }
 
 void loop() {
