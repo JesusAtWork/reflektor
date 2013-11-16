@@ -4,76 +4,13 @@
 #include <display16.h>
 #include "variables.h"
 
-#include <Adafruit_NeoPixel.h>
-
-enum { PRENDIENDO, APAGANDO };
-
-const int TIEMPO_ENCENDIDO = 1000;
-
-class LuzCarga {
-public:
-  Adafruit_NeoPixel pixels;
-  int intensidad;
-  int estado;
-  int sensor;
-  unsigned long start_time;
-
-  LuzCarga(int pin_datos, int input_sensor) : pixels(8, pin_datos, NEO_GRB + NEO_KHZ800), intensidad(0), estado(APAGANDO), sensor(input_sensor) {
-  }
-  
-  void setup() {
-    pixels.begin();
-  }
-
-  void llenar () {
-    estado = PRENDIENDO;
-    start_time = millis();
-  }
-
-  void reset() {
-    estado = APAGANDO;
-    intensidad = 0;
-    actualizar();
-  }
-  
-  void loop() {
-    if (estado==APAGANDO && intensidad > 0) {
-      intensidad--;
-      actualizar();
-    }
-    if (estado==PRENDIENDO && intensidad < 255) {
-      intensidad++;
-      actualizar();
-    }
-    if (intensidad == 255 && millis() > start_time + TIEMPO_ENCENDIDO) {
-      estado = APAGANDO;
-    }
-  }
-  
-  void actualizar() {
-    for(uint16_t i=0; i<pixels.numPixels(); i++) {
-      pixels.setPixelColor(i, pixels.Color(0, intensidad, 0));
-    }
-    pixels.show();
-  }
-
-  int lectura_sensor() {
-    if (intensidad == 0) {
-      int lectura = analogRead(sensor);
-      return lectura;
-    } else {
-      // si la tira de leds esta prendida, ignorar el valor
-      return 0;
-    }
-  }
-};
-
 // PENDIENTES:
 // demorar un ratito en ganar [  ]
 // usar variables en todos lados [./]
 
 #define DEBUG
 
+// FIXME: hacerles PULLUP!!!
 const byte FIN_CARRERA_PIN = 7;
 const byte BOTON_CAMBIO = 5;
 const byte BOTON_IZQUIERDO = 6;
@@ -85,9 +22,9 @@ const byte ENABLE_5484 = 9;
 const byte CLOCK_5484  = 12;
 const byte DATA_5484   = 10;
 
-const byte SER_Pin   = 10;   //pin 14 on the 74HC595   
-const byte RCLK_Pin  = 11;   //pin 12 on the 74HC595   
-const byte SRCLK_Pin = 12;   //pin 11 on the 74HC595
+const byte SER_Pin   = 10;   //pin 14 on the 75HC595   
+const byte RCLK_Pin  = 11;   //pin 12 on the 75HC595   
+const byte SRCLK_Pin = 12;   //pin 11 on the 75HC595
 
 const byte LED_ESPEJO1 = 16; // 17 y 18 son los otros espejos
 const byte LED_GANASTE = 21;
@@ -98,9 +35,6 @@ const byte ENABLE_LASER = 20;
 
 const byte SENSOR0 = A2;
 const byte SENSOR1 = A3;
-
-const byte PIN_LUZCARGA0 = 2;
-const byte PIN_LUZCARGA1 = 3;
 
 const int ENERGIA_INICIAL = 10000;
 
@@ -175,8 +109,8 @@ public:
 class PlayState : public State {
     unsigned long last_change;
     int n;
-    void verificar_sensor0();
     void verificar_sensor1();
+    void verificar_sensor2();
     void mover_espejo(int espejo, int direccion);
     void procesar_botones_izquierda_derecha();
     void mostrar_espejo_activo();
@@ -204,33 +138,6 @@ public:
     void loop();
 } reset_state;
 
-class AttractState : public State {
-    unsigned long last_change;
-    int n;
-    void revisar_botones();
-    void scrollear_texto();
-public:
-    const char* name() {
-      return "Atract Mode";
-    }
-    void setup();
-    void loop();
-} attract_state;
-
-class ThanksState : public State {
-    unsigned long last_change;
-    int n;
-    void revisar_botones();
-    void scrollear_texto();
-    boolean algun_boton();
-public:
-    const char* name() {
-      return "Atract Mode";
-    }
-    void setup();
-    void loop();
-} thanks_state;
-
 class InputInitialsState : public State {
   unsigned long last_change_time;
   int cursor;
@@ -256,8 +163,6 @@ public:
 } inputinitials_state;
 
 State* State::current_state = &inputinitials_state;
-LuzCarga carga0(PIN_LUZCARGA0, SENSOR0);
-LuzCarga carga1(PIN_LUZCARGA1, SENSOR1);
 
 void setup() {
     Serial.begin(115200);
@@ -293,15 +198,11 @@ void setup() {
     Stepper::train.clearRegisters();
     Stepper::train.writeRegisters();
 
-    carga0.setup();
-    carga1.setup();
     State::change_state(&reset_state);
 }
 
 void loop() {
     State::current_state->loop();
-    carga0.loop();
-    carga1.loop();
     steppers_go();
 #ifdef DEBUG
     if (DELAY_LOOP > 0) {

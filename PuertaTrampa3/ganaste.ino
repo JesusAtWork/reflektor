@@ -2,12 +2,17 @@ const char* GANASTE_MESSAGE = "    GANASTE     ";
 const int GANASTE_DELAY = 8000;
 
 void GanasteState::setup() {
-    carrito.move(0);
-    espejo1.move(0);
-    espejo2.move(0);
-    espejo3.move(0);
     play_track("youwin");
     apagar_todo();
+    espejo1.setMaxSpeed(VELOCIDAD_ESPEJO1*2);
+    espejo1.setAcceleration(ACELERACION_ESPEJO1*2);
+    espejo1.move(3000);
+    espejo2.setMaxSpeed(VELOCIDAD_ESPEJO2*2);
+    espejo2.setAcceleration(ACELERACION_ESPEJO2*2);
+    espejo2.move(-3000);
+    espejo3.setMaxSpeed(VELOCIDAD_ESPEJO3*2);
+    espejo3.setAcceleration(ACELERACION_ESPEJO3*2);
+    espejo3.move(3000);
 }
 
 void GanasteState::loop() {

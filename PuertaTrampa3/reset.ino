@@ -33,9 +33,8 @@ void ResetState::setup() {
     Stepper::train.setRegisterPin(LED_ESPEJO1+2, LOW);
 
     stop_audio();
-    carga0.reset();
-    carga1.reset();
     ir_al_fin_carrera();
+
 }
 
 void ResetState::loop() {
@@ -56,6 +55,7 @@ void ResetState::loop() {
         if (carrito.distanceToGo() == 0) {
             estado_puerta = CERRADA;
             change_state(&play_state);
+            //change_state(&inputinitials_state);
         }
     }
     

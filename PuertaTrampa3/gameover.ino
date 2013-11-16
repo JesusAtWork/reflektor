@@ -52,7 +52,7 @@ void GameoverState::loop() {
     }
     
     if (millis() > start_time + GAMEOVER_DELAY) {
-        change_state(&attract_state);
+        change_state(&reset_state);
     }
 }
 

@@ -1,5 +1,7 @@
+const int DISPLAY_UPDATE_INTERVAL = 100;
+
 void PlayState::verificar_sensor1() {
-    int sensor1 = carga1.lectura_sensor();
+    int sensor1 = analogRead(SENSOR1);
     if (estado_puerta == ABRIENDO) {
         if(fin_de_carrera_activado()) {
             estado_puerta = CERRANDO;
@@ -13,7 +15,6 @@ void PlayState::verificar_sensor1() {
         }
 
         if (sensor1 > MUCHA_LUZ && !fin_de_carrera_activado()) {
-            carga1.llenar();
             if (estado_puerta == CERRADA) {
                 play_track("alarma");
             }
@@ -30,11 +31,10 @@ void PlayState::verificar_sensor1() {
     }
 }
 
-void PlayState::verificar_sensor0() {
-    int sensor0 = carga0.lectura_sensor();
-    if (sensor0 > MUCHA_LUZ) {
+void PlayState::verificar_sensor2() {
+    int sensor2 = analogRead(SENSOR0);
+    if (sensor2 > MUCHA_LUZ) {
         // ganaste!
-        carga0.llenar();
         change_state (&ganaste_state);
     }
 }
@@ -88,6 +88,19 @@ void PlayState::procesar_botonera() {
     procesar_boton_cambio_espejo();
 }
 
+const char *texto = "     REFLEKTOR [c] 2013 *#O CLUB DE JAQUEO *#O GPL - reflektor@protocultura.net       \0";
+
+void PlayState::scrollear_texto() {
+    if (millis() > last_change + DISPLAY_UPDATE_INTERVAL) {
+        display.show(&texto[n]);
+        n++;
+        last_change = millis();
+        if (texto[n+DISPLAY_LEN-1] == '\0') {
+          n = 0;
+        }
+    }
+}
+
 void PlayState::setup() {
     espejo_activo = 0;
     mostrar_espejo_activo();
@@ -122,7 +135,7 @@ void titilar_led_ldr() {
 void PlayState::loop()
 {
     Stepper::train.setRegisterPin(ENABLE_LASER, HIGH);
-    verificar_sensor0();
+    verificar_sensor2();
     verificar_sensor1();
     procesar_botonera();
     titilar_led_ldr();
