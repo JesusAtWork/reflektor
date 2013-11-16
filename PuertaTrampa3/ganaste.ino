@@ -9,6 +9,7 @@ void GanasteState::setup() {
     apagar_todo();
     play_track("youwin");
     carga0.llenar();
+    start_time = millis();
 }
 
 void GanasteState::loop() {
