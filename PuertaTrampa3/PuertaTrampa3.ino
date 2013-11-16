@@ -13,68 +13,52 @@ const int TIEMPO_ENCENDIDO = 1000;
 class LuzCarga {
 public:
   Adafruit_NeoPixel pixels;
-  int valor;
-  int estado;
   int sensor;
-  unsigned long start_time;
 
-  LuzCarga(int pin_datos, int input_sensor) : pixels(8, pin_datos, NEO_GRB + NEO_KHZ800), valor(0), estado(APAGANDO), sensor(input_sensor) {
+  LuzCarga(int pin_datos, int input_sensor) : pixels(8, pin_datos, NEO_GRB + NEO_KHZ800), sensor(input_sensor) {
   }
   
   void setup() {
     pixels.begin();
   }
 
-  void llenar () {
-    estado = PRENDIENDO;
-    start_time = millis();
-  }
-
-  void reset() {
-    estado = APAGANDO;
-    valor = 0;
-    actualizar();
-  }
-  
-  void loop() {
-    int intensidad = valor >>1;
-
-    if (estado==APAGANDO && valor > 0) {
-      valor--;
-      actualizar();
-    }
-    if (estado==PRENDIENDO && intensidad < 255) {
-      valor++;
-      actualizar();
-    }
-    if (intensidad == 255 && millis() > start_time + TIEMPO_ENCENDIDO) {
-      estado = APAGANDO;
-    }
-  }
-  
-  void actualizar() {
-    int intensidad = valor >>1;
-
+  void colorear(int r, int g, int b) {
     for(uint16_t i=0; i<pixels.numPixels(); i++) {
-      pixels.setPixelColor(i, pixels.Color(intensidad, 0, 0));
+      pixels.setPixelColor(i, pixels.Color(r, g, b));
     }
     pixels.show();
   }
 
-  int lectura_sensor() {
-    if (valor == 0) {
-      int lectura = analogRead(sensor);
-      return lectura;
-    } else {
-      // si la tira de leds esta prendida, ignorar el valor
-      return 0;
+  void llenar () {
+    long start_time = millis();
+    
+    while (1) {
+      int pasaron = millis() - start_time;
+      if (pasaron < 1500) {
+        long intensidad = pasaron * 256L / 1500L;
+        colorear(0, intensidad, 0);
+      } else if (pasaron < 3000) {
+        long intensidad = (pasaron-1500L) * 256L / 1500L;
+        colorear(intensidad, 255-intensidad, 0);
+      } else if (pasaron < 5000) {
+        if ((pasaron / 100)%2) {
+          colorear(255, 0, 0);
+        } else {
+          colorear(0, 0, 0);
+        }
+      } else break;
     }
+    reset();
+  }
+
+  void reset() {
+    colorear(0, 0, 0);
+  }
+
+  int lectura_sensor() {
+    return analogRead(sensor);
   }
 };
-
-// PENDIENTES:
-// demorar un ratito en ganar [  ]
-// usar variables en todos lados [./]
 
 #define DEBUG
 
@@ -305,8 +289,6 @@ void setup() {
 
 void loop() {
     State::current_state->loop();
-    carga0.loop();
-    carga1.loop();
     steppers_go();
 #ifdef DEBUG
     if (DELAY_LOOP > 0) {

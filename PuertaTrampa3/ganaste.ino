@@ -6,8 +6,9 @@ void GanasteState::setup() {
     espejo1.move(0);
     espejo2.move(0);
     espejo3.move(0);
-    play_track("youwin");
     apagar_todo();
+    play_track("youwin");
+    carga0.llenar();
 }
 
 void GanasteState::loop() {

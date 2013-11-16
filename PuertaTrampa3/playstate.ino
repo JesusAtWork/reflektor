@@ -13,10 +13,9 @@ void PlayState::verificar_sensor1() {
         }
 
         if (sensor1 > MUCHA_LUZ && !fin_de_carrera_activado()) {
+            play_track("alarma");
             carga1.llenar();
-            if (estado_puerta == CERRADA) {
-                play_track("alarma");
-            }
+            
             estado_puerta = ABRIENDO;
             carrito.setMaxSpeed(VELOCIDAD_ABRIENDO);
             carrito.setAcceleration(ACELERACION_ABRIENDO);
@@ -34,7 +33,6 @@ void PlayState::verificar_sensor0() {
     int sensor0 = carga0.lectura_sensor();
     if (sensor0 > MUCHA_LUZ) {
         // ganaste!
-        carga0.llenar();
         change_state (&ganaste_state);
     }
 }
