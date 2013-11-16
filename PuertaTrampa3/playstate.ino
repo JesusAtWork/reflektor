@@ -1,5 +1,5 @@
 void PlayState::verificar_sensor1() {
-    int sensor1 = analogRead(SENSOR1);
+    int sensor1 = carga1.lectura_sensor();
     if (estado_puerta == ABRIENDO) {
         if(fin_de_carrera_activado()) {
             estado_puerta = CERRANDO;
@@ -13,10 +13,9 @@ void PlayState::verificar_sensor1() {
         }
 
         if (sensor1 > MUCHA_LUZ && !fin_de_carrera_activado()) {
+            carga1.llenar();
             if (estado_puerta == CERRADA) {
                 play_track("alarma");
-                carga1.prendiendo();
-                carga0.apagando();
             }
             estado_puerta = ABRIENDO;
             carrito.setMaxSpeed(VELOCIDAD_ABRIENDO);
@@ -27,16 +26,15 @@ void PlayState::verificar_sensor1() {
         if (estado_puerta == CERRANDO && carrito.distanceToGo() == 0 ) {
             estado_puerta = CERRADA;
             play_track("game2");
-            carga0.prendiendo();
-            carga1.apagando();
         }
     }
 }
 
-void PlayState::verificar_sensor2() {
-    int sensor2 = analogRead(SENSOR0);
-    if (sensor2 > MUCHA_LUZ) {
+void PlayState::verificar_sensor0() {
+    int sensor0 = carga0.lectura_sensor();
+    if (sensor0 > MUCHA_LUZ) {
         // ganaste!
+        carga0.llenar();
         change_state (&ganaste_state);
     }
 }
@@ -124,7 +122,7 @@ void titilar_led_ldr() {
 void PlayState::loop()
 {
     Stepper::train.setRegisterPin(ENABLE_LASER, HIGH);
-    verificar_sensor2();
+    verificar_sensor0();
     verificar_sensor1();
     procesar_botonera();
     titilar_led_ldr();

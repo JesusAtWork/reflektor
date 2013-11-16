@@ -3,11 +3,12 @@ const int DISPLAY_UPDATE_INTERVAL = 100;
 void AttractState::setup() {
     last_change = 0;
     n = 0;
-//    play_track("gameover");
-//    apagar_todo();
+    stop_audio();
+    carga0.reset();
+    carga1.reset();
 }
 
-const char *texto = "     PE()EKTOP [reflektor] - 2013 *#O CLUB DE JAQUEO *#O GPL - reflektor@protocultura.net - presione los dos botones rojos para comenzar -     \0";
+const char *texto = "     PE()EKTOP [reflektor] - presione los dos botones rojos para comenzar      \0";
 
 void AttractState::scrollear_texto() {
     if (millis() > last_change + DISPLAY_UPDATE_INTERVAL) {

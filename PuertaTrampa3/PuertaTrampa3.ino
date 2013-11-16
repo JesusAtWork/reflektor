@@ -8,27 +8,34 @@
 
 enum { PRENDIENDO, APAGANDO };
 
+const int TIEMPO_ENCENDIDO = 1000;
+
 class LuzCarga {
 public:
   Adafruit_NeoPixel pixels;
   int intensidad;
   int estado;
- 
-  LuzCarga(int pin_datos) : pixels(8, pin_datos, NEO_GRB + NEO_KHZ800), intensidad(0), estado(APAGANDO) {
+  int sensor;
+  unsigned long start_time;
+
+  LuzCarga(int pin_datos, int input_sensor) : pixels(8, pin_datos, NEO_GRB + NEO_KHZ800), intensidad(0), estado(APAGANDO), sensor(input_sensor) {
   }
   
   void setup() {
     pixels.begin();
   }
 
-  void prendiendo () {
+  void llenar () {
     estado = PRENDIENDO;
+    start_time = millis();
   }
 
-  void apagando () {
+  void reset() {
     estado = APAGANDO;
+    intensidad = 0;
+    actualizar();
   }
-
+  
   void loop() {
     if (estado==APAGANDO && intensidad > 0) {
       intensidad--;
@@ -37,6 +44,9 @@ public:
     if (estado==PRENDIENDO && intensidad < 255) {
       intensidad++;
       actualizar();
+    }
+    if (intensidad == 255 && millis() > start_time + TIEMPO_ENCENDIDO) {
+      estado = APAGANDO;
     }
   }
   
@@ -47,6 +57,15 @@ public:
     pixels.show();
   }
 
+  int lectura_sensor() {
+    if (intensidad == 0) {
+      int lectura = analogRead(sensor);
+      return lectura;
+    } else {
+      // si la tira de leds esta prendida, ignorar el valor
+      return 0;
+    }
+  }
 };
 
 // PENDIENTES:
@@ -156,8 +175,8 @@ public:
 class PlayState : public State {
     unsigned long last_change;
     int n;
+    void verificar_sensor0();
     void verificar_sensor1();
-    void verificar_sensor2();
     void mover_espejo(int espejo, int direccion);
     void procesar_botones_izquierda_derecha();
     void mostrar_espejo_activo();
@@ -198,6 +217,20 @@ public:
     void loop();
 } attract_state;
 
+class ThanksState : public State {
+    unsigned long last_change;
+    int n;
+    void revisar_botones();
+    void scrollear_texto();
+    boolean algun_boton();
+public:
+    const char* name() {
+      return "Atract Mode";
+    }
+    void setup();
+    void loop();
+} thanks_state;
+
 class InputInitialsState : public State {
   unsigned long last_change_time;
   int cursor;
@@ -223,8 +256,8 @@ public:
 } inputinitials_state;
 
 State* State::current_state = &inputinitials_state;
-LuzCarga carga0(PIN_LUZCARGA0);
-LuzCarga carga1(PIN_LUZCARGA1);
+LuzCarga carga0(PIN_LUZCARGA0, SENSOR0);
+LuzCarga carga1(PIN_LUZCARGA1, SENSOR1);
 
 void setup() {
     Serial.begin(115200);
@@ -262,7 +295,7 @@ void setup() {
 
     carga0.setup();
     carga1.setup();
-    State::change_state(&attract_state);
+    State::change_state(&reset_state);
 }
 
 void loop() {

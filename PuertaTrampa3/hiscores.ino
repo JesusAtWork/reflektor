@@ -72,6 +72,17 @@ void InputInitialsState::setup () {
   display_delay = MAX_DISPLAY_DELAY;
   space_was_pressed = false;
   update_display();
+  
+  
+  espejo1.setMaxSpeed(VELOCIDAD_ESPEJO1*2);
+  espejo1.setAcceleration(ACELERACION_ESPEJO1*2);
+  espejo1.move(3000);
+  espejo2.setMaxSpeed(VELOCIDAD_ESPEJO2*2);
+  espejo2.setAcceleration(ACELERACION_ESPEJO2*2);
+  espejo2.move(-3000);
+  espejo3.setMaxSpeed(VELOCIDAD_ESPEJO3*2);
+  espejo3.setAcceleration(ACELERACION_ESPEJO3*2);
+  espejo3.move(3000);
 }
 
 inline byte InputInitialsState::getKeystatus() {
