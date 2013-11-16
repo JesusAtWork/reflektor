@@ -1,0 +1,8 @@
+.. link: 
+.. description: 
+.. tags: 
+.. date: 2013/09/25 00:08:05
+.. title: Video
+.. slug: video
+
+.. youtube:: G4HYuvcE_QI
