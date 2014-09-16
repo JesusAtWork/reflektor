@@ -1,6 +1,6 @@
 #define DEBUG
 
-int PUERTA_CERRADA = 1400;
+int PUERTA_CERRADA = 1000;
 int PUERTA_ABIERTA = 0;
 int POCA_LUZ = 180;
 int MUCHA_LUZ = 250;

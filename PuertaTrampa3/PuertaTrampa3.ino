@@ -97,7 +97,7 @@ StepperTrain Stepper::train = StepperTrain();
 Stepper espejo1(0, 1, 2, 3);
 Stepper espejo2(4, 5, 6, 7);
 Stepper espejo3(8, 9, 10, 11);  
-Stepper carrito(15, 14, 13, 12);
+Stepper carrito(12, 13, 14, 15);
 
 typedef enum {ABRIENDO, CERRANDO, CERRADA} EstadosPuerta;
 EstadosPuerta estado_puerta;
